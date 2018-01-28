@@ -3,7 +3,7 @@ var _ = require('lodash');
 var tick = require('animation-loops');
 var wait = require('wait-for-stuff');
 var log = require('loglevel');
-log.setLevel(process.env.loglevel);
+log.setLevel(process.env.audit);
 
 var Symbol = require('./symbol.js');
 
