@@ -9,9 +9,11 @@ module.exports = function() {
 	if(!config.has('binance.key') || !config.has('binance.secret') || !config.has('symbols') || !config.has('default')) {
 		return null;
 	} else {
-		_config.binance = config.get('binance');
-		_config.binance.key = process.env.key;
-		_config.binance.secret = process.env.secret;
+		// _config.binance = config.get('binance');
+		_config.binance = {
+			'key': process.env.key,
+			'secret': process.env.secret
+		}
 	}
 
 	var _symbols = config.get('symbols');
