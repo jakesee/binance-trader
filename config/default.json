@@ -3,7 +3,7 @@
 		"key": "8XSjTglwI2g6SYbfUfUf",
 		"secret": "Lzz37AN5B4mhdy24nvDL"
 	},
-	"symbols": ["VENBTC","XVGBTC","REQBTC","TRXBTC","CNDBTC","YOYOBTC","IOSTBTC","MODBTC"],
+	"symbols": ["VENBTC","XVGBTC","REQBTC","TRXBTC","CNDBTC","YOYOBTC","IOSTBTC","MODBTC", "SNMBTC"],
 	"default": {
 		"bag": {
 			"quantity": null,
@@ -116,7 +116,7 @@
 			"cost": 0.00002279
 		}
 	},
-	"YOYOBTC": {
+	"ARNBTC": {
 		"bag": {
 			"quantity": 0,
 			"cost": 0
