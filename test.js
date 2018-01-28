@@ -20,8 +20,6 @@ binanceWS.onKline('VENBTC', '1m', (data) => {
 	console.log(data);
 });
 
-rest.account((err, data) => {
-	
-});
+rest.account((err, data) => { });
 
 console.log(process.env);

@@ -116,10 +116,10 @@
 			"cost": 0.00002279
 		}
 	},
-	"ARNBTC": {
+	"YOYOBTC": {
 		"bag": {
-			"quantity": 0,
-			"cost": 0
+			"quantity": 95,
+			"cost": 0.00002133
 		}
 	}
 }
