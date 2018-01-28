@@ -19,6 +19,6 @@ binance = new binance(io);
 // io.on('disconnect', (socket) => { binance.removeSocket(socket); });
 
 binance.run();
-//var trader = require('./trader.js');
-// trader = new trader(binance);
-// trader.start();
+var trader = require('./trader.js');
+trader = new trader(binance);
+trader.start();

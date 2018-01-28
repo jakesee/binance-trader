@@ -39,7 +39,6 @@ module.exports = function(io) {
 		// one-time initialization of portfolio
 		var symbols = config.symbols;
 		_portfolio = wait.for.promise(this.getPortfolio(symbols));
-		process.exit();
 		_io.sockets.emit('portfolio', _portfolio);
 		var portfolio = _.reduce(_portfolio, (o, p) => { o[p.asset + 'BTC'] = p; return o; }, {});
 		_.each(symbols, (symbol) => {			
@@ -48,7 +47,7 @@ module.exports = function(io) {
 			var cost = Number(portfolio[symbol].weightedAveragePrice);
 			_symbols[symbol].loadConfig(config[symbol], quantity, cost);
 			
-			console.log(_symbols[symbol].symbol, _symbols[symbol].config); 
+			console.log(_symbols[symbol].symbol, _symbols[symbol].config.bag); 
 		});
 
 		// one-time fetch klines and order booK (depth) for all symbols
@@ -230,7 +229,6 @@ module.exports = function(io) {
 								b.weightedAveragePrice = Math.max(0, totalTradeValue / Math.min(totalTradeQty, totalQuantity));
 								b.totalTradeValue = totalTradeValue;
 								b.totalTradeQty = Math.min(totalTradeQty, totalQuantity);
-								console.log(b.asset+'BTC', trades.length, b.weightedAveragePrice, b.totalTradeValue, b.totalTradeQty);
 								return false;
 							}
 						});
