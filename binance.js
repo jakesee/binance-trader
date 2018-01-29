@@ -22,6 +22,7 @@ const rest = new binance.BinanceRest({
 var Symbol = require('./symbol.js');
 
 module.exports = function(io) {
+	const _binanceWS = new binance.BinanceWS(true);
 	var _io = io;
 	var _portfolio = [];
 	var _symbols = {}; // store all the symbols we are trading
@@ -55,12 +56,11 @@ module.exports = function(io) {
 		this.loadTradingView(symbols);
 
 		// setup real-time streams
-		const binanceWS = new binance.BinanceWS(true);
-		this.loadTickerStream(binanceWS, symbols); // collect latest price data from websocket
-		this.loadTradeStream(binanceWS, symbols);
-		this.loadKlineStream(binanceWS, symbols); // collect latest kline data from websocket
-		this.loadDepthStream(binanceWS, symbols);
-		this.loadUserDataStream(binanceWS);
+		this.loadTickerStream(symbols); // collect latest price data from websocket
+		this.loadTradeStream(symbols);
+		this.loadKlineStream(symbols); // collect latest kline data from websocket
+		this.loadDepthStream(symbols);
+		this.loadUserDataStream();
 	}
 
 	this.loadTradingView = function(symbols) {
@@ -93,27 +93,27 @@ module.exports = function(io) {
 		});
 	}
 
-	this.loadTickerStream = function(binanceWS, symbols) {
-		const streams = binanceWS.streams;
+	this.loadTickerStream = function(symbols) {
+		const streams = _binanceWS.streams;
 		var assets = _.map(symbols, (symbol) => { return streams.ticker(symbol) });
-		binanceWS.onCombinedStream(assets, (streamEvent) => {
+		_binanceWS.onCombinedStream(assets, (streamEvent) => {
 			_symbols[streamEvent.data.symbol].ticker = streamEvent.data;
 			_io.sockets.emit('ticker', streamEvent.data);
 		});
 	}
 
-	this.loadTradeStream = function(binanceWS, symbols) {
-		const streams = binanceWS.streams;
+	this.loadTradeStream = function(symbols) {
+		const streams = _binanceWS.streams;
 		var assets =_.map(symbols, (symbol) => { return streams.trade(symbol); });
-		binanceWS.onCombinedStream(assets, (streamEvent) => {
+		_binanceWS.onCombinedStream(assets, (streamEvent) => {
 			_symbols[streamEvent.data.symbol].updateTrade(streamEvent.data);
 		});
 	}
 
-	this.loadKlineStream = function(binanceWS, symbols) {
-		const streams = binanceWS.streams;
+	this.loadKlineStream = function(symbols) {
+		const streams = _binanceWS.streams;
 		var assets = _.map(symbols, (symbol) => { return streams.kline(symbol, _symbols[symbol].config.indicator.kline.interval) });
-		binanceWS.onCombinedStream(assets, (streamEvent) => {
+		_binanceWS.onCombinedStream(assets, (streamEvent) => {
 			var symbol = streamEvent.data.symbol;
 			if(symbol in _symbols && _symbols[symbol].ready()) {
 				var thisKline = this.translateKline(streamEvent.data.kline);
@@ -129,16 +129,16 @@ module.exports = function(io) {
 		});
 	}
 
-	this.loadDepthStream = function(binanceWS, symbols) {
-		const streams = binanceWS.streams;
+	this.loadDepthStream = function(symbols) {
+		const streams = _binanceWS.streams;
 		var assets =_.map(symbols, (symbol) => { return streams.depth(symbol); });
-		binanceWS.onCombinedStream(assets, (streamEvent) => {
+		_binanceWS.onCombinedStream(assets, (streamEvent) => {
 			_symbols[streamEvent.data.symbol].updateBook(streamEvent.data);
 		});
 	}
 
-	this.loadUserDataStream = function(binanceWS) {
-		binanceWS.onUserData(rest, (streamData) => {
+	this.loadUserDataStream = function() {
+		_binanceWS.onUserData(rest, (streamData) => {
 
 			console.log('USERDATASTREAM 1', streamData.symbol, streamData.eventType, streamData.executionType, streamData.orderStatus);
 			if(!(_symbols.hasOwnProperty(streamData.symbol))) return;
