@@ -53,7 +53,7 @@ module.exports = function(binance) {
 					this._asking(symbol, price); // asking price offered, waiting for taker
 				} else if(position == Symbol.POSITION.SELL) {
 					this._sell(symbol, price);
-				} else if (symbol.canSell(price) && !this._sell(symbol, price)) { // there are items in bag, need to sell off
+				} else if (symbol.canSell() && !this._sell(symbol, price)) { // there are items in bag, need to sell off
 					this._dca(symbol, price); // do technical analysis to see if good to buy	
 				} else {
 					this._buy(symbol, price); // do technical analysis to see if good to buy
@@ -247,6 +247,11 @@ module.exports = function(binance) {
 		var sellStrategy = symbol.config.strategy.sell;
 		var shouldSell = true;
 		var cost = symbol.config.bag.cost;
+		var quantity = symbol.config.bag.quantity;
+
+		if(shouldSell && (quantity * cost < sellStrategy.minCost)) {
+			shouldSell = false;
+		}
 
 		if(shouldSell && sellStrategy.gain.enabled == true) {
 			var targetsell = cost * sellStrategy.gain.target;
