@@ -3,7 +3,6 @@ var _ = require('lodash');
 var tick = require('animation-loops');
 var wait = require('wait-for-stuff');
 var log = require('loglevel');
-log.setLevel(process.env.audit);
 
 var Symbol = require('./symbol.js');
 
@@ -23,7 +22,7 @@ module.exports = function(binance) {
 	// 	PARTIALLY_FILLED
 	// 	FILLED
 	_binance.events.on('NEW', (data) => {  });
-	_binance.events.on('CANCELED', (data) => {  });
+	_binance.events.on('CANCELED', (data) => { this.onCancelOrder(data);  });
 	_binance.events.on('PARTIALLY_FILLED', (data) => { });
 	_binance.events.on('FILLED', (data) => { this.onFilledOrder(data); });
 
@@ -54,7 +53,7 @@ module.exports = function(binance) {
 					this._asking(symbol, price); // asking price offered, waiting for taker
 				} else if(position == Symbol.POSITION.SELL) {
 					this._sell(symbol, price);
-				} else if (symbol.canSell() && !this._sell(symbol, price)) { // there are items in bag, need to sell off
+				} else if (symbol.canSell(price) && !this._sell(symbol, price)) { // there are items in bag, need to sell off
 					this._dca(symbol, price); // do technical analysis to see if good to buy	
 				} else {
 					this._buy(symbol, price); // do technical analysis to see if good to buy
@@ -150,10 +149,16 @@ module.exports = function(binance) {
 				// once OK, immediately place order
 				var book = symbol.getBook();
 				var bid = book.bids[0].price;
+				var betterbid = bid + 0.00000001;
+				if(betterbid <= stop) bid = betterbid;
 				var ask = book.asks[0].price;
 				if((ask / bid) - 1 < symbol.config.strategy.buy.maxBuySpread) { // prevent pump
 					var quantity = Math.ceil(symbol.config.strategy.buy.minCost / bid);
 					if(bag.quantity > 0) quantity = 2 * bag.quantity;
+					if(!symbol.canBuy(quantity, bid)) {
+						bag.position = Symbol.POSITION.SELL; // just concentrate on selling, the loss is too little
+						return;
+					}
 					var order = wait.for.promise(_binance.newBuyLimit(symbol.symbol, quantity, bid));
 					if(order != null) {
 						bag.order = {
@@ -180,11 +185,11 @@ module.exports = function(binance) {
 		var bag = symbol.config.bag;
 		var order = bag.order;
 		if(order != null && bag.position == Symbol.POSITION.BIDDING) {
-			log.debug('bidding', symbol.symbol, bag.order);	
 			var book = symbol.getBook();
 			var bid0 = book.bids[0];
 			var ask0 = book.asks[0];
-			if(order.price < bid0.price && (bid0.quantity / order.quantity) > 1.1 && (bid0.quantity / ask0.quantity) > 1.1) {
+			log.debug('bidding', symbol.symbol, order.price, bid0.price, bid0.quantity, ask0.quantity, bid0.quantity / ask0.quantity);	
+			if(order.price < bid0.price && (bid0.quantity / ask0.quantity) > 1.1) {
 				var cancel = wait.for.promise(_binance.cancelOrder(symbol.symbol, order.orderId));
 				if(cancel != null) {
 					bag.position = null;
@@ -198,11 +203,11 @@ module.exports = function(binance) {
 		var bag = symbol.config.bag;
 		var order = bag.order;
 		if(order != null && bag.position == Symbol.POSITION.ASKING) {
-			log.debug('asking', symbol.symbol, bag.order);	
 			var book = symbol.getBook();
 			var bid0 = book.bids[0];
 			var ask0 = book.asks[0];
-			if(order.price > ask0.price && (ask0.quantity / order.quantity) > 1.1 && (ask0.quantity / bid0.quantity) > 1.1) {
+			log.debug('asking', symbol.symbol, order.price, ask0.price, ask0.quantity, bid0.quantity, ask0.quantity / bid0.quantity);	
+			if(order.price > ask0.price && (ask0.quantity / bid0.quantity) > 1.1) {
 				var cancel = wait.for.promise(_binance.cancelOrder(symbol.symbol, order.orderId));
 				if(cancel != null) {
 					bag.position = null;
@@ -213,11 +218,28 @@ module.exports = function(binance) {
 	}
 
 	this.onFilledOrder = function(data) {
-		// go back to buy mode
+		log.info('bag', data.executionType, data.orderId);
 		var symbols = _binance.getSymbols();
-		symbols[data.symbol].config.bag.order = null;
-		symbols[data.symbol].config.bag.position = null;
-		log.info('filled bag', data.symbol, symbols[data.symbol].config.bag);
+		// check whether we are cancelling the order we are currently tracking,
+		// otherwise, it is some other order we don't have to care about.
+		if(data.orderId == symbols[data.symbol].config.bag.order.orderId) {
+			symbols[data.symbol].config.bag.order = null;
+			symbols[data.symbol].config.bag.position = null; // go back to buy mode
+			log.info('bag', data.executionType, data.orderId, symbols[data.symbol].config.bag.quantity, symbols[data.symbol].config.bag.cost);
+		}
+	}
+
+	this.onCancelOrder = function(data) {
+		log.info('bag', data.executionType, data.orderId);
+		var symbols = _binance.getSymbols();
+		// check whether we are cancelling the order we are currently tracking,
+		// otherwise, it is some other order we don't have to care about.
+		if(data.orderId == symbols[data.symbol].config.bag.order.orderId) {
+			symbols[data.symbol].config.bag.order = null;
+			symbols[data.symbol].config.bag.position = null; // go back to buy mode
+			log.info('bag', data.executionType, data.orderId, symbols[data.symbol].config.bag.quantity, symbols[data.symbol].config.bag.cost);
+		}
+		
 	}
 
 	this._sell = function(symbol, price) {
@@ -257,6 +279,8 @@ module.exports = function(binance) {
 				// immediately place order
 				var book = symbol.getBook();
 				var ask = book.asks[0].price;
+				var betterask = ask - 0.00000001;
+				if(betterask >= stop) ask = betterask;
 				var quantity = bag.quantity;
 				var order = wait.for.promise(_binance.newSellLimit(symbol.symbol, quantity, ask));
 				if(order != null) {

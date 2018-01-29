@@ -96,12 +96,19 @@ var Symbol = function(symbol) {
 			&& this.config.bag.cost != null);
 	}
 
-	this.canSell = function() {
-		if(this.config.bag.quantity * this.config.bag.cost >= this.config.strategy.sell.minCost) {
+	this.canSell = function(price) {
+		if(price == null) price = this.config.bag.cost;
+		if(this.config.bag.quantity * price >= this.config.strategy.sell.minCost) {
 			return true;
 		} else {
 			return false;
 		}
+	}
+
+	this.canBuy = function(quantity, price) {
+		if(quantity * price < this.config.strategy.buy.minCost) {
+			return false
+		} else return true;
 	}
 }
 

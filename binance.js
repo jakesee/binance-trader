@@ -1,4 +1,5 @@
 'use strict';
+var log = require('loglevel');
 var _ = require('lodash');
 var columnify = require('columnify');
 var wait = require('wait-for-stuff');
@@ -28,10 +29,10 @@ module.exports = function(io) {
 
 	_io.on('connection', (socket) => {
 		socket.emit('portfolio', _portfolio);
-		console.log('connected');
+		log.info('connected');
 	});
 	_io.on('disconnect', (socket) => {
-		console.log('disconnected');
+		log.info('disconnected');
 	});
 
 	this.run = function() {
@@ -47,7 +48,7 @@ module.exports = function(io) {
 			var cost = Number(portfolio[symbol].weightedAveragePrice);
 			_symbols[symbol].loadConfig(config[symbol], quantity, cost);
 			
-			console.log(_symbols[symbol].symbol, _symbols[symbol].config.bag); 
+			log.info(_symbols[symbol].symbol, _symbols[symbol].config.bag.quantity, _symbols[symbol].config.bag.cost, _symbols[symbol].canSell()); 
 		});
 
 		// one-time fetch klines and order booK (depth) for all symbols
@@ -77,6 +78,7 @@ module.exports = function(io) {
 				} else {
 					// for new coins, if not enough 500 klines, then remaining are undefined
 					_symbols[symbol].kline = _.filter(data, (d) => { return d != undefined });
+					log.info(symbol, 'kline', _symbols[symbol].kline.length);
 				}
 			});
 
@@ -85,6 +87,7 @@ module.exports = function(io) {
 					console.log(err);
 				} else {
 					_symbols[symbol].setBook(data);
+					log.info(symbol, 'book');
 				}
 			});
 		});
@@ -168,6 +171,7 @@ module.exports = function(io) {
 			config.bag.quantity --- quantity available for trading
 			config.bag.cost --- weighted average cost of bag
 		*/
+		log.info(data.side, data.orderId, data.executionType, data.lastTradeQuantity, data.lastTradePrice);
 		var symbol = data.symbol;
 		var side = data.side;
 		var price = Number(data.lastTradePrice);
