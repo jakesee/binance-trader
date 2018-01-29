@@ -48,7 +48,7 @@ module.exports = function(io) {
 			var cost = Number(portfolio[symbol].weightedAveragePrice);
 			_symbols[symbol].loadConfig(config[symbol], quantity, cost);
 			
-			log.info(_symbols[symbol].symbol, _symbols[symbol].config.bag.quantity, _symbols[symbol].config.bag.cost, _symbols[symbol].canSell()); 
+			log.info(_symbols[symbol].symbol, _symbols[symbol].config.bag.quantity, _symbols[symbol].config.bag.cost, _symbols[symbol].config.bag.position);
 		});
 
 		// one-time fetch klines and order booK (depth) for all symbols

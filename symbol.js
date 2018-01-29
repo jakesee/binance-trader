@@ -96,8 +96,8 @@ var Symbol = function(symbol) {
 			&& this.config.bag.cost != null);
 	}
 
-	this.canSell = function() {
-		if(this.config.bag.quantity * this.config.bag.cost >= this.config.strategy.sell.minCost) {
+	this.wantToSell = function() {
+		if(this.config.bag.quantity > 0 && this.config.bag.cost > 0) {
 			return true;
 		} else {
 			return false;
@@ -106,7 +106,7 @@ var Symbol = function(symbol) {
 
 	this.canBuy = function(quantity, price) {
 		if(quantity * price < this.config.strategy.buy.minCost) {
-			return false
+			return false;
 		} else return true;
 	}
 }
