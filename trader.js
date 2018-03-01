@@ -90,6 +90,13 @@ module.exports = function(binance) {
 
 		var shouldBuy = true
 
+		if(shouldBuy && buyStrategy.rsi.enabled === true) {
+			log.debug('MACD not implemented yet');
+		}
+		if(shouldBuy && buyStrategy.rsi.enabled === true) {
+			if(tech.rsi[0] > buyStrategy.rsi.trigger)
+				shouldBuy = false;
+		}
 		if(shouldBuy && buyStrategy.bb.enabled === true) {
 			if(buyStrategy.bb.reference == 'lowbb') {
 				var level = ((price - tech.bb[0].lower) / tech.bb[0].lower);
@@ -149,8 +156,6 @@ module.exports = function(binance) {
 				// once OK, immediately place order
 				var book = symbol.getBook();
 				var bid = book.bids[0].price;
-				var betterbid = bid + 0.00000001;
-				if(betterbid <= stop) bid = betterbid;
 				var ask = book.asks[0].price;
 				if((ask / bid) - 1 < symbol.config.strategy.buy.maxBuySpread) { // prevent pump
 					var quantity = Math.ceil(symbol.config.strategy.buy.minCost / bid);
@@ -284,8 +289,6 @@ module.exports = function(binance) {
 				// immediately place order
 				var book = symbol.getBook();
 				var ask = book.asks[0].price;
-				var betterask = ask - 0.00000001;
-				if(betterask >= stop) ask = betterask;
 				var quantity = bag.quantity;
 				var order = wait.for.promise(_binance.newSellLimit(symbol.symbol, quantity, ask));
 				if(order != null) {
@@ -338,7 +341,7 @@ module.exports = function(binance) {
 				'values': closes,
 				'period': indicator.rsi.period
 			}
-			rsi = _.takeRight(RSI.calculate(bbInput), 1);
+			rsi = _.takeRight(RSI.calculate(rsiInput), 1);
 		}
 		if(strategy.buy.emaspread.enabled === true) {
 			var emafastInput = { 'values': closes, 'period': indicator.ema.fastPeriod };
