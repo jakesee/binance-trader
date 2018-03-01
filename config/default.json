@@ -1,9 +1,5 @@
 {
-	"binance": {
-		"key": "8XSjTglwI2g6SYbfUfUf",
-		"secret": "Lzz37AN5B4mhdy24nvDL"
-	},
-	"symbols": ["OAXBTC","PIVXBTC","REQBTC","TRXBTC","YOYOBTC","MODBTC","SNMBTC"],
+	"symbols": ["DGDBTC"],
 	"default": {
 		"bag": {
 			"quantity": null,
@@ -47,12 +43,12 @@
 					"trigger": -0.003
 				},
 				"rsi": {
-					"enabled": false,
-					"trigger": -0.003
+					"enabled": true,
+					"trigger": 34
 				},
 				"emaspread": {
 					"enabled": true,
-			        "trigger": -0.016
+			        "trigger": -0.003
 			    },
 			    "emafast": {
 			    	"enabled": true,
@@ -75,15 +71,14 @@
 				}
 			},
 			"dca": {
-				"enabled": true,
+				"enabled": false,
 				"levels": [-0.035, -0.045, -0.045, -0.045, -0.055, -0.055]
 			}
 		}
 	},
-	"TRXBTC": {
+	"VENBTC": {
 		"bag": {
-			"quantity": 0,
-			"cost": 0
+			"cost": 0.00060793
 		}
 	}
 }

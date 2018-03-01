@@ -7,7 +7,7 @@ class Configurator {
 		var _config = {};
 
 		// mandatory data
-		if(!config.has('binance.key') || !config.has('binance.secret') || !config.has('symbols') || !config.has('default')) {
+		if(!config.has('symbols') || !config.has('default')) {
 			return null;
 		} else {
 			// _config.binance = config.get('binance');
