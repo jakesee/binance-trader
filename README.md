@@ -14,7 +14,8 @@ heroku local:run node app
 * config/default.json - user settings for running the bot
 * configurator.js - prepares the config for each symbol based on user settings
 
-# Buying Strategies
+# Configuration
+## Buying Strategies
 * single ema and price spread
 * ema slow and fast spread
 * macd
@@ -22,5 +23,8 @@ heroku local:run node app
 * bollinger bands
 * dca
 
-# Selling Strategy
+## Selling Strategy
 * percentage gain
+
+# Warning
+Bot will sell everything in your bag that are not locked in any open orders.
