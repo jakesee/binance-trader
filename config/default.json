@@ -1,5 +1,6 @@
 {
-	"symbols": ["DGDBTC"],
+	"quote": "ETH",
+	"symbols": ["ADAETH"],
 	"default": {
 		"bag": {
 			"quantity": null,
@@ -47,7 +48,7 @@
 					"trigger": 34
 				},
 				"emaspread": {
-					"enabled": true,
+					"enabled": false,
 			        "trigger": -0.003
 			    },
 			    "emafast": {

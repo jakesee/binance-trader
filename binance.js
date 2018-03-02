@@ -33,7 +33,7 @@ class Binance {
 		// one-time initialization of portfolio
 		var symbols = config.symbols;
 		this._portfolio = wait.for.promise(this._getPortfolio(symbols));
-		var portfolio = _.reduce(this._portfolio, (o, p) => { o[p.asset + 'BTC'] = p; return o; }, {});
+		var portfolio = _.reduce(this._portfolio, (o, p) => { o[p.asset + config.quote] = p; return o; }, {});
 		_.each(symbols, (symbol) => {			
 			this._symbols[symbol] = new Symbol(symbol, config[symbol]);
 			var quantity = Math.trunc(Number(portfolio[symbol].free));
@@ -61,9 +61,9 @@ class Binance {
 				if(err) {
 					console.log(err);
 				} else {
-					var balances = _.filter(data.balances, (b) => { return symbols.includes(b.asset+'BTC'); });
+					var balances = _.filter(data.balances, (b) => { return symbols.includes(b.asset + config.quote) });
 					_.each(balances, (b) => {
-						if(b.asset == 'BTC') return true; // skip BTC
+						if(b.asset == config.quote) return true; // skip BTC
 						b.weightedAveragePrice = 0;
 						b.totalTradeValue = 0;
 						b.totalTradeQty = 0;
@@ -71,7 +71,7 @@ class Binance {
 						var tradeBNB = [];
 						var tradeBTC = [];
 						var totalQuantity = Math.trunc(Number(b.free) + Number(b.locked));
-						tradeBTC = wait.for.promise(rest.myTrades(b.asset+'BTC'));
+						tradeBTC = wait.for.promise(rest.myTrades(b.asset + config.quote));
 						if(b.asset != 'BNB') {
 							tradeBNB = wait.for.promise(rest.myTrades(b.asset+'BNB'));
 							if(!Array.isArray(tradeBNB)) tradeBNB = []; // some coins does not have BNB pairs

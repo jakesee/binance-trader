@@ -90,7 +90,7 @@ module.exports = function(binance) {
 
 		var shouldBuy = true
 
-		if(shouldBuy && buyStrategy.rsi.enabled === true) {
+		if(shouldBuy && buyStrategy.macd.enabled === true) {
 			log.debug('MACD not implemented yet');
 		}
 		if(shouldBuy && buyStrategy.rsi.enabled === true) {
@@ -186,7 +186,6 @@ module.exports = function(binance) {
 	}
 
 	this._bidding = function(symbol, price) {
-		
 		var bag = symbol.config.bag;
 		var order = bag.order;
 		if(order != null && bag.position == Symbol.POSITION.BIDDING) {

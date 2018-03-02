@@ -7,9 +7,11 @@ class Configurator {
 		var _config = {};
 
 		// mandatory data
-		if(!config.has('symbols') || !config.has('default')) {
+		if(!config.has('symbols') || !config.has('default') || !config.has('quote')) {
 			return null;
 		} else {
+			// set quote currency
+			_config.quote = config.get('quote');
 			// _config.binance = config.get('binance');
 			_config.binance = {
 				'key': process.env.key,
