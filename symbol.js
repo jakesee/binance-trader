@@ -12,6 +12,7 @@ var Symbol = function(symbol) {
 	this.tradeLowest = null;
 	this.tradeHighest = null;
 	this.book = null;
+	this.bookBuffer = [];
 	this.config = null;
 
 	this.initDCA = function() {
@@ -38,12 +39,21 @@ var Symbol = function(symbol) {
 		_.each(book.asks, (ask) => {
 			this.book.asks[ask[0]] = { price: Number(ask[0]), quantity: Number(ask[1]) };
 		});
+
+		console.log('bookBuffer.length', this.bookBuffer.length);
+		_.each(this.bookBuffer, (b) => {
+			this.updateBook(b);
+		});
 	}
 
 	this.updateBook = function(book) {
 
+		if(this.book == null) { // buffer the stream so that depth snapshot can be updated properly
+			this.bookBuffer.push(book);
+			return;
+		}
 		// drop update if old
-		if(this.book == null || book.lastUpdateId <= this.book.lastUpdateId) return;
+		if(book.lastUpdateId <= this.book.lastUpdateId) return;
 		this.book.lastUpdateId = book.lastUpdateId
 		_.each(book.bidDepthDelta, (bid) => {
 			var quantity = Number(bid.quantity);
@@ -65,13 +75,13 @@ var Symbol = function(symbol) {
 		});
 	}
 
-	this.getBook = function(book) {
-		this.book = {
+	this.getBook = function() {
+		var book = {
 			'lastUpdateId': this.book.lastUpdateId,
 			'bids': _.orderBy(this.book.bids, ['price'], ['desc']),
 			'asks': _.orderBy(this.book.asks, ['price'], ['asc'])
 		};
-		return this.book;
+		return book;
 	}
 
 	this.updateTrade = function(trade) {

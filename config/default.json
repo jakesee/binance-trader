@@ -1,6 +1,6 @@
 {
 	"quote": "ETH",
-	"symbols": ["TRXETH"],
+	"symbols": ["DGDETH"],
 	"default": {
 		"bag": {
 			"quantity": null,
@@ -48,7 +48,7 @@
 					"trigger": 34
 				},
 				"emaspread": {
-					"enabled": false,
+					"enabled": true,
 			        "trigger": -0.003
 			    },
 			    "emafast": {
