@@ -1,0 +1,18 @@
+body {
+	font-family: 'Open Sans', sans-serif;
+}
+
+table#portfolio {
+	width: 100%;
+}
+table#portfolio td {
+	padding: 3px 6px;
+}
+table#portfolio .number {
+	text-align: right;
+}
+.profit { background-color: rgb(0,255,0); }
+.near { background-color: rgb(255,255,0); }
+.loss { background-color: rgb(255,0,0); }
+
+.center { text-align: center; }
