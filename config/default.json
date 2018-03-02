@@ -1,5 +1,6 @@
 {
-	"symbols": ["DGDBTC"],
+	"quote": "ETH",
+	"symbols": ["TRXETH"],
 	"default": {
 		"bag": {
 			"quantity": null,
@@ -43,11 +44,11 @@
 					"trigger": -0.003
 				},
 				"rsi": {
-					"enabled": true,
+					"enabled": false,
 					"trigger": 34
 				},
 				"emaspread": {
-					"enabled": true,
+					"enabled": false,
 			        "trigger": -0.003
 			    },
 			    "emafast": {
@@ -74,11 +75,6 @@
 				"enabled": false,
 				"levels": [-0.035, -0.045, -0.045, -0.045, -0.055, -0.055]
 			}
-		}
-	},
-	"VENBTC": {
-		"bag": {
-			"cost": 0.00060793
 		}
 	}
 }
