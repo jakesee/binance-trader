@@ -13,5 +13,5 @@ export interface ISymbol {
     tradeNow: String;
     bookBuffer: Array<any>;
 
-    loadDefaultSymbolConfig();
+    loadDefaultSymbolConfig(config: any, quantity: number, cost: number): void;
 }

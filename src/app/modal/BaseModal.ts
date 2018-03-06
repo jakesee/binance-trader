@@ -8,7 +8,10 @@ export class BaseModal {
      * @param arg  to be cloned
      */
     cloneDeep<T>(arg: T): T {
-        return JSON.parse(JSON.stringify(arg));
+        if (!!arg) {
+            return JSON.parse(JSON.stringify(arg));
+        } else {
+            return arg;
+        }
     }
-
 }
