@@ -43,15 +43,15 @@ class Binance {
 			log.info(this._symbols[symbol].symbol, this._symbols[symbol].config.bag.quantity, this._symbols[symbol].config.bag.cost, this._symbols[symbol].config.bag.position);
 		});
 
-		// one-time fetch klines and order booK (depth) for all symbols
-		this._loadTradingView(symbols);
-
 		// setup real-time streams
 		this._loadTickerStream(symbols); // collect latest price data from websocket
 		this._loadTradeStream(symbols);
 		this._loadKlineStream(symbols); // collect latest kline data from websocket
 		this._loadDepthStream(symbols);
 		this._loadUserDataStream();
+
+		// one-time fetch klines and order booK (depth) for all symbols
+		this._loadTradingView(symbols);
 	}
 
 	_getPortfolio(symbols) {

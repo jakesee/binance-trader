@@ -110,6 +110,7 @@ module.exports = function(binance) {
 		}
 		if(shouldBuy && buyStrategy.emaspread.enabled === true) {
 			var level = (tech.emafast / tech.emaslow) - 1;
+			log.debug("emaspread", level);
 			// to buy, if trigger is negative, then price must be lower than trigger
 			// to buy, if trigger is positive, then price must be higher than trigger
 			if((buyStrategy.emaspread.trigger < 0 && level > buyStrategy.emaspread.trigger)
@@ -119,6 +120,7 @@ module.exports = function(binance) {
 		}
 		if(shouldBuy && buyStrategy.emafast.enabled === true) {
 			var level = (price / tech.emafast) - 1;
+			log.debug("emafast", level);
 			if((buyStrategy.emafast.trigger < 0 && level > buyStrategy.emafast.trigger)
 				|| (buyStrategy.emafast.trigger > 0 && level < buyStrategy.emafast.trigger)) {
 				shouldBuy = false;	
@@ -138,6 +140,7 @@ module.exports = function(binance) {
 			symbol.config.bag.position = Symbol.POSITION.BUYING;
 			symbol.config.bag.bid = price;
 			symbol.config.bag.bid0 = price;
+			log.debug(symbol.config.bag);
 			symbol.initDCA();
 		}
 	}

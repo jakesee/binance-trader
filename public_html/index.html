@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>Binance Trading Platform</title>
+	<link href="https://fonts.googleapis.com/css?family=Open+Sans:400,400i,600,600i,700,700i" rel="stylesheet">
+	<link href="./css/index.css" rel="stylesheet">
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/2.0.4/socket.io.js"></script>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/angular.js/1.6.5/angular.min.js"></script>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.7.1/Chart.min.js"></script>
+	<link href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet" integrity="sha384-wvfXpqpZZVQGK6TAh5PVlGOfQNHSoD2xbE+QkPxCAFlNEevoEH3Sl0sibVcOQVnN" crossorigin="anonymous">
+</head>
+<body ng-app="platform">
+	<div ng-controller="dashboard">
+		<table id="portfolio">
+			<thead>
+				<tr>
+					<th>Asset</th>
+					<th>Free</th>
+					<th>Locked</th>
+					<th>Total</th>
+					<th>Cost</th>
+					<th>Spot</th>
+					<th>MA</th>
+					<th></th>
+					<th></th>
+					<th></th>
+					<th>BTC</th>
+				</tr>
+			</thead>
+			<tbody ng-repeat="(key, balance) in portfolio">
+				<tr ng-class="{
+					profit: balance.gain > 1.002,
+					near: balance.gain < 1.002,
+					loss: balance.gain < 0.9
+				}">
+				<td>{{balance.asset}}</td>
+				<td class="number">{{balance.free | number:3 }}</td>
+				<td class="number">{{balance.locked | number:3 }}</td>
+				<td class="number">{{(balance.free-0) + (balance.locked-0) | number:3 }}</td>
+				<td class="number">{{balance.weightedAveragePrice | number:8 }}</td>
+				<td class="number">
+					({{balance.gain | number:3 }})
+					{{ticker[balance.symbol].currentClose | number:8 }}
+				</td>
+				<td class="number">
+					({{ticker[balance.symbol].deviationFromMean | number:3 }})
+					{{ticker[balance.symbol].weightedAveragePrice | number:8 }}
+				</td>
+				<td>
+					<span ng-class="{'fa fa-medkit': ticker[balance.symbol].weightedAveragePrice > balance.weightedAveragePrice }"></span>
+					<span ng-class="{'fa fa-star': ticker[balance.symbol].currentClose / balance.weightedAveragePrice > 1.11 }"></span>
+				</td>
+				<td class="center">
+					<span ng-class="{'fa fa-shopping-cart': ticker[balance.symbol].currentClose < balance.weightedAveragePrice }"></span>
+					<span ng-class="{'fa fa-usd':  ticker[balance.symbol].currentClose / balance.weightedAveragePrice > 1.002 }"></span>
+				</td>
+				<td class="center">
+					<span ng-class="{'fa fa-shopping-cart': ticker[balance.symbol].weightedAveragePrice > ticker[balance.symbol].currentClose }"></span>
+					<span ng-class="{'fa fa-usd': ticker[balance.symbol].weightedAveragePrice < ticker[balance.symbol].currentClose }"></span>
+				</td>
+				<td>{{balance.weightedAveragePrice * ((balance.free-0) + (balance.locked-0)) | number:8}}</td>
+				</tr>
+			</tbody>
+		</table>
+		<div class="" ng-repeat="book in books">
+			<h1>{{book.product}} Order Book</h1>
+			<table>
+				<thead><tr><th>Market Size</th><th>Price</th><th>My Size</th></tr></thead>
+				<tbody ng-repeat="bid in book.bids">
+					<tr>
+						<td>{{bid.market_size}}</td>
+						<td>{{bid.price}}</td>
+						<td>{{bid.my_size}}</td>
+					</tr>
+				</tbody>
+				<tbody ng-repeat="ask in book.asks">
+					<tr>
+						<td>{{ask.market_size}}</td>
+						<td>{{ask.price}}</td>
+						<td>{{ask.my_size}}</td>
+					</tr>
+				</tbody>
+			</table>
+		</div>
+	</div>
+</body>
+<script src="./index.js"></script>
+</html>
