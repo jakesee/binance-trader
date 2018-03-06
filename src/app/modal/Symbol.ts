@@ -6,7 +6,7 @@ import * as _ from "lodash";
 import { ISymbol, IKLine } from './ISymbol';
 import { BaseModal } from './BaseModal';
 import { ISymbolConfig } from './ISymbolConfig';
-import { IBook, IBookRecord } from "./IBook";
+import { IBook, IBookOrder, IBookDelta } from "./IBook";
 
 class TSymbol extends BaseModal implements ISymbol {
 
@@ -17,17 +17,16 @@ class TSymbol extends BaseModal implements ISymbol {
     lastTime: number;
     kline: IKLine;
     ticker: any;
-    tradeNow: String;
-    bookBuffer: Array<any>;
     config: ISymbolConfig;
+    trade; // TODO: create ITrade
 
     /**
      * local variables
      */
-    private _book: IBook;
-    private trade: IBookRecord;
-    private tradeLowest: IBookRecord;
-    private tradeHighest: IBookRecord;
+    private _bookByPrice; // this is a hash _bookByPrice[price] = { quantity: n, price: m } internal data structure does not follow interface
+    private tradeLowest: IBookOrder;
+    private tradeHighest: IBookOrder;
+    private _bookBuffer: Array<IBookDelta>; // store incoming book delta updates before the book is set up
 
     readonly POSITIONS = {
         ANALYZING: 0,
@@ -67,91 +66,82 @@ class TSymbol extends BaseModal implements ISymbol {
 
     /**
      * 
-     * @param b 
+     * @param delta 
      * TODO: Need to refactor code
      */
-    updateBook(b: IBook): void {
+    updateBook(delta: IBookDelta): void {
 
         // buffer the stream so that depth snapshot can be updated properly
-        if (this._book == null) {
-            this.bookBuffer.push(b);
+        if (this._bookByPrice == null) {
+            this._bookBuffer.push(delta);
             return;
         }
 
         // drop update if old
-        if (b.lastUpdateId <= this._book.lastUpdateId) {
+        if (delta.lastUpdateId <= this._bookByPrice.lastUpdateId) {
             return;
         }
 
-        this._book.lastUpdateId = b.lastUpdateId
+        this._bookByPrice.lastUpdateId = delta.lastUpdateId;
 
-        _.each(b.bidDepthDelta, (bid) => {
-
+        _.each(delta.bidDepthDelta, (bid) => {
             var quantity = Number(bid.quantity);
             var price = bid.price; // typeof string
             if (quantity > 0) {
-                this._book.bids[price] = { 'price': Number(price), 'quantity': quantity };
+                this._bookByPrice.bids[price] = { 'price': Number(price), 'quantity': quantity };
             } else {
-                delete this._book.bids[price];
+                delete this._bookByPrice.bids[price];
             }
         });
-        _.each(b.askDepthDelta, (ask) => {
+        _.each(delta.askDepthDelta, (ask) => {
             var quantity = Number(ask.quantity);
             var price = ask.price; // typeof string
             if (quantity > 0) {
-                this._book.asks[price] = { 'price': Number(price), 'quantity': quantity };
+                this._bookByPrice.asks[price] = { 'price': Number(price), 'quantity': quantity };
             } else {
-                delete this._book.asks[price];
+                delete this._bookByPrice.asks[price];
             }
         });
-
-        //TODO: need to verify this
-        this._book.bids = _.orderBy(this._book.bids, ['price'], ['desc']);
-        this._book.asks = _.orderBy(this._book.asks, ['price'], ['desc']);
-    }
-
-    /**
-     * 
-     * @param book;
-     */
-    initBookObj(book): IBook {
-        return {
-            lastUpdateId: book.lastUpdateId,
-            bids: { price: 0, quantity: 0 },
-            asks: { price: 0, quantity: 0 },
-            askDepthDelta: {},
-            bidDepthDelta: {}
-        };
     }
 
     /**
      * 
      * @param boobk 
      */
-    setBook(b: IBook) {
+    setBook(book: IBook) {
 
-        this._book = this.initBookObj(b);
+        this._bookByPrice = {
+			'lastUpdateId': book.lastUpdateId,
+			'bids': {},
+			'asks': {}
+		};
 
-        _.each(b.bids, (bid) => {
-            this._book.bids[bid[0]] = { price: Number(bid[0]), quantity: Number(bid[1]) };
+        _.each(book.bids, (bid) => {
+            this._bookByPrice.bids[bid[0]] = { price: Number(bid[0]), quantity: Number(bid[1]) };
         });
-        _.each(b.asks, (ask) => {
-            this._book.asks[ask[0]] = { price: Number(ask[0]), quantity: Number(ask[1]) };
+        _.each(book.asks, (ask) => {
+            this._bookByPrice.asks[ask[0]] = { price: Number(ask[0]), quantity: Number(ask[1]) };
         });
-        _.each(this.bookBuffer, (b) => {
+        _.each(this._bookBuffer, (b) => {
             this.updateBook(b);
         });
     }
 
     /** */
     getBook(): IBook {
-        return this._book;
+        // sort the book only when we want to get, otherwise _bookByPrice can be unsorted
+         var book = {
+			'lastUpdateId': this._bookByPrice.lastUpdateId,
+			'bids': _.orderBy(this._bookByPrice.bids, ['price'], ['desc']),
+			'asks': _.orderBy(this._bookByPrice.asks, ['price'], ['asc'])
+		};
+		return book;
     }
     /**
      * 
      * @param trade 
      */
-    updateTrade(trade: IBookRecord): void {
+    updateTrade(trade: IBookOrder): void {
 
         this.trade = trade;
 
@@ -169,7 +159,7 @@ class TSymbol extends BaseModal implements ISymbol {
         return (this.trade != null
             && Array.isArray(this.kline) && this.kline.length > 0
             && this.ticker != null
-            && this._book != null
+            && this._bookByPrice != null
             && this.config.bag.quantity != null
             && this.config.bag.cost != null);
     }

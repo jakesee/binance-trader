@@ -1,12 +1,17 @@
-export interface IBookRecord {
+export interface IBookOrder {
     price: number;
     quantity: number
 }
 
 export interface IBook {
-    lastUpdateId: string;
-    bids: IBookRecord;
-    asks: IBookRecord;
-    bidDepthDelta: any; //TODO
-    askDepthDelta: any;//TODO
+    lastUpdateId: number;
+    bids: Array<IBookOrder>;
+    asks: Array<IBookOrder>;
+}
+
+// Order book changes
+export interface IBookDelta {
+    lastUpdateId: number;
+    bidDepthDelta: Array<IBookOrder>;
+    askDepthDelta: Array<IBookOrder>;
 }
