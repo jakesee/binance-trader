@@ -7,6 +7,7 @@ import { ISymbol, IKLine } from './ISymbol';
 import { BaseModal } from './BaseModal';
 import { ISymbolConfig } from './ISymbolConfig';
 import { IBook, IBookRecord } from "./IBook";
+import { POSITIONS } from "../constants/Constant";
 
 class TSymbol extends BaseModal implements ISymbol {
 
@@ -29,16 +30,7 @@ class TSymbol extends BaseModal implements ISymbol {
     private tradeLowest: IBookRecord;
     private tradeHighest: IBookRecord;
 
-    readonly POSITIONS = {
-        ANALYZING: 0,
-        TRAILING: 0b000010010,
-        // when bag is empty, switch to buy mode
-        ANYBUY: 0b000000111, BUY: 0b000000001, BUYING: 0b000000010, BIDDING: 0b000000100,
-        // when bag is not empty, switch to sell mode
-        ANYSELL: 0b000111000, SELL: 0b000001000, SELLING: 0b000010000, ASKING: 0b000100000,
-        // when current price fall belows average bag cost, switch to DCA mode
-        ANYDCA: 0b111000000, DCA: 0b001000000, DCABUYING: 0b010000000, DCABIDDING: 0b100000000
-    }
+
 
     constructor(config: ISymbolConfig, symbol: string) {
         super()
@@ -156,7 +148,7 @@ class TSymbol extends BaseModal implements ISymbol {
         this.trade = trade;
 
         // if we are trailing price, we want to record the lowest and highest price
-        if (this.config.bag.POSITION && this.POSITIONS.TRAILING > 0) {
+        if (this.config.bag.POSITION && POSITIONS.TRAILING > 0) {
             if (this.tradeLowest == null || (Number(trade.price) < Number(this.tradeLowest.price))) this.tradeLowest = trade;
             if (this.tradeHighest == null || (Number(trade.price) > Number(this.tradeHighest.price))) this.tradeHighest = trade;
         } else {
