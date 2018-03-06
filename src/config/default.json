@@ -1,6 +1,6 @@
 {
     "quote": "ETH",
-    "symbols": ["TRXETH", "DGDETH"],
+    "symbols": ["DGDETH", "ICNETH"],
     "default": {
         "bag": {
             "quantity": null,

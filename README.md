@@ -1,9 +1,15 @@
 # binance-trader
 
 # Installation
-npm install
-create .env file with api key and secret
+sudo npm install yarn -g
+yarn install
+create .env file with api key and secret 
 configure settings in config/default.json file
+
+# Run
+* In dev : npm run dev
+* in prod : npm start
+
 heroku local:run node app
 
 # Organisation
@@ -15,6 +21,9 @@ heroku local:run node app
 * configurator.js - prepares the config for each symbol based on user settings
 
 # Configuration
+* for dev  please update the developmenet.json or env vars
+* for prod please update producation.json or env vars
+
 ## Buying Strategies
 * single ema and price spread
 * ema slow and fast spread

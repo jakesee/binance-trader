@@ -4,7 +4,7 @@ var tick = require('animation-loops');
 var wait = require('wait-for-stuff');
 var log = require('loglevel');
 
-var Symbol = require('./symbol.js');
+var Symbol = require('../modal/symbol.js');
 
 var technical = require('technicalindicators');
 var MACD = technical.MACD;
