@@ -206,7 +206,7 @@ module.exports = function(binance) {
 		}
 	}
 
-	this._asking = function(symbol) {
+	this._asking = function(symbol, price) {
 		var bag = symbol.config.bag;
 		var order = bag.order;
 		if(order != null && bag.position == Symbol.POSITION.ASKING) {
