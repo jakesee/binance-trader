@@ -10,8 +10,7 @@ export interface ISymbol {
     lastTime: number;
     kline: IKLine;
     ticker: any;
-    tradeNow: String;
-    bookBuffer: Array<any>;
+    trade; // TODO: create ITrade
 
     loadDefaultSymbolConfig(config: any, quantity: number, cost: number): void;
 }
