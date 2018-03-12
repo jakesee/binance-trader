@@ -327,12 +327,13 @@ export class Trader {
 
         if (strategy.buy.macd.enabled === true) {
             var macdInput = {
-                'values': closes,
-                'fastPeriod': indicator.macd.fastPeriod,
-                'slowPeriod': indicator.macd.slowPeriod,
-                'signalPeriod': indicator.macd.signalPeriod,
-                'SimpleMAOscillator': false,
-                'SimpleMASignal': false,
+                values: closes,
+                period: 0,//TODO Jake : need to fix this issue
+                fastPeriod: indicator.macd.fastPeriod,
+                slowPeriod: indicator.macd.slowPeriod,
+                signalPeriod: indicator.macd.signalPeriod,
+                SimpleMAOscillator: false,
+                SimpleMASignal: false,
             }
             macd = _.takeRight(this.MACD.calculate(macdInput), 1); // we need this many data points to decide on buy
         }

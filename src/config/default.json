@@ -53,11 +53,11 @@
                 },
                 "emafast": {
                     "enabled": true,
-                    "trigger": -0.016
+                    "trigger": -0.003
                 },
                 "emaslow": {
                     "enabled": false,
-                    "trigger": -0.016
+                    "trigger": -0.003
                 },
                 "loss": {
                     "trigger": -7

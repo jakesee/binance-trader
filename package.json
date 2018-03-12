@@ -2,20 +2,16 @@
   "name": "crypto-trader",
   "version": "1.0.0",
   "description": "Crypto trading application",
-  "main": "index.js",
+  "main": "dist/index.js",
   "scripts": {
     "build": "tsc",
     "dev": "tsc --watch & nodemon dist",
     "test": "tsc && mocha dist/**/*.spec.js",
     "lint": "eslint src --ext ts",
     "tsc": "tsc",
-    "start": "node app"
+    "start": "node index"
   },
-  "keywords": [
-    "binanance",
-    "trading",
-    "bitcoin"
-  ],
+  "keywords": ["binanance", "trading", "bitcoin"],
   "author": "Jake See",
   "license": "MIT",
   "dependencies": {

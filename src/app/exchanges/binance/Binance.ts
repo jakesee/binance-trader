@@ -3,8 +3,7 @@ import * as _ from 'lodash';
 import * as wait from 'wait-for-stuff';
 import * as events from 'events';
 
-
-var config = require('../../config/configurator.js');
+let config = require('./symbol_config.json');
 let TSymbol = require('../modal/symbol.js');
 
 var binance = require('binance');
@@ -15,8 +14,6 @@ const rest = new binance.BinanceRest({
     recvWindow: 10000,
     disableBeautification: false,
 });
-
-
 
 export class Binance {
 
@@ -252,10 +249,10 @@ export class Binance {
         this.events.emit('PARTIALLY_FILLED', data);
     }
     _onUDSTradeFilled(data) {
-
         this._onUDSTrade(data);
         this.events.emit('FILLED', data);
     }
+
     _onUDSTrade(data) {
         /* Update bag:
             config.bag.quantity --- quantity available for trading
@@ -267,14 +264,16 @@ export class Binance {
         var price = Number(data.lastTradePrice);
         var lastTradeQuantity = Number(data.lastTradeQuantity);
         var bag = this._symbols[data.symbol].config.bag;
+        let totalQty;
+
         if (side == 'BUY') {
-            var totalQty = lastTradeQuantity + bag.quantity;
+            totalQty = lastTradeQuantity + bag.quantity;
             var totalCost = (lastTradeQuantity * price) + (bag.quantity * bag.cost);
             var weightedAveragePrice = totalCost / totalQty;
             bag.cost = weightedAveragePrice;
             bag.quantity = totalQty;
         } else if (side == 'SELL') {
-            var totalQty = bag.quantity - lastTradeQuantity;
+            totalQty = bag.quantity - lastTradeQuantity;
             var totalCost = (bag.quantity * bag.cost) - (lastTradeQuantity * price);
             if (totalQty <= 0) {
                 bag.cost = 0;

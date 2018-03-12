@@ -193,7 +193,7 @@
 // 		var order = bag.order;
 // 		if(order != null && bag.position == Symbol.POSITION.BIDDING) {
 // 			var book = symbol.getBook();
-// 			var bid0 = book.bids[0];
+// 			var bid0 =afsdf book.bids[0];
 // 			var ask0 = book.asks[0];
 // 			log.debug('bidding', symbol.symbol, order.price, bid0.price, bid0.quantity, ask0.quantity, bid0.quantity / ask0.quantity);	
 // 			if(order.price < bid0.price && (bid0.quantity / ask0.quantity) > 1.1) {
