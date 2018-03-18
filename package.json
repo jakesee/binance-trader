@@ -1,30 +1,25 @@
 {
-  "name": "binance-trader",
+  "name": "ts-binance",
   "version": "1.0.0",
-  "description": "Binance trading platform",
-  "main": "app.js",
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
-  },
-  "keywords": [
-    "binance",
-    "trading",
-    "bitcoin"
-  ],
-  "author": "Jake See",
-  "license": "MIT",
+  "description": "",
+  "main": "build/app.js",
   "dependencies": {
     "animation-loops": "^2.0.4",
     "binance": "^1.3.3",
-    "columnify": "^1.5.4",
-    "config": "^1.29.2",
-    "express": "^4.16.2",
-    "lodash": "^4.17.4",
+    "lodash": "^4.17.5",
     "loglevel": "^1.6.1",
-    "node-rest-client": "^3.1.0",
-    "socket.io": "^2.0.4",
-    "technicalindicators": "^1.1.4",
-    "wait-for-stuff": "^1.3.0",
-    "ws": "^4.0.0"
-  }
+    "technicalindicators": "^1.1.8",
+    "wait-for-stuff": "^1.4.0"
+  },
+  "devDependencies": {
+    "@types/node": "^9.4.7",
+    "typescript": "^2.7.2"
+  },
+  "scripts": {
+    "start": "tsc && xcopy src\\config\\*.* build\\config\\*.* /Y && node build/app.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC"
 }
