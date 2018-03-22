@@ -1,4 +1,5 @@
 # binance-trader
+This is still work-in-progress
 
 # Installation
 npm install
