@@ -27,11 +27,11 @@ export interface IAsset {
     getTicker():ITicker;
     getOrderBook():IOrderBook;
     getConfig():{[key:string]:any};
+    setConfig(config:{[key:string]:any}, quantity:number, cost:number):void
     setLastQueryTime(elaspseTime:number):void;
     isTimeToQuery(elapsedTime:number):boolean;
     isReady():boolean;
-    initSellMode():void;
-    initBuyMode():void;
+    initDCA():void; // TODO: this should be initSellMode()
     canBuy(quantity:number, price:number):boolean;
     shouldSell():boolean;
 }

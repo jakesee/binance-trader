@@ -109,7 +109,7 @@ export class Trader {
 			asset.getConfig().bag.bid = price;
 			asset.getConfig().bag.bid0 = price;
 			log.debug(asset.getConfig().bag);
-			asset.initBuyMode();
+			asset.initDCA(); // TODO: this should be called when trader successfully buy asset
 		}
     }
     private _buying(asset:IAsset) {

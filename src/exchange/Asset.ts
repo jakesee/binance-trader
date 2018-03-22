@@ -44,6 +44,13 @@ export class Asset implements IAsset
     public getConfig():{[key:string]:any} {
         return this.config;
     }
+    public setConfig(config:{[key:string]:any}, quantity:number, cost:number):void {
+        this.config = config;
+		if(this.config.bag.quantity == null) this.config.bag.quantity = quantity;
+		if(this.config.bag.cost == null) this.config.bag.cost = cost;
+		this.config.bag.quantity = Math.min(this.config.bag.quantity, quantity);
+		if(this.config.bag.cost > 0) this.initDCA();
+    }
     public setLastQueryTime(elapsedTime:number):void {
         this._lastTime = elapsedTime;
     }
@@ -59,11 +66,8 @@ export class Asset implements IAsset
 			&& this.config.bag.quantity != null
 			&& this.config.bag.cost != null);
     }
-    public initSellMode():void {
-        // No action required
-    }
-    public initBuyMode():void {
-        // reset the DCA settings
+    public initDCA():void {
+        // TODO: this function should be initSellMode, and should be called when trader sucessfully bought asset
         this.config.bag.dca = _.cloneDeep(this.config.strategy.dca);
     }
     public canBuy(quantity:number, price:number):boolean {

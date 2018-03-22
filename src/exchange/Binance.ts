@@ -26,8 +26,14 @@ export class Binance implements IExchange {
     }
     start(): void {
         var symbols = this._config.symbols;
+        var portfolio = wait.for.promise(this._getPortfolio(symbols));
         _.each(symbols, (symbol:string) => {
             this._assets[symbol] = new Asset(symbol, this._config[symbol]);
+            var quantity = Math.trunc(Number(portfolio[symbol].free));
+			var cost = Number(portfolio[symbol].weightedAveragePrice);
+			this._assets[symbol].setConfig(this._config[symbol], quantity, cost);
+			
+			log.info(this._assets[symbol].getSymbol(), this._assets[symbol].getConfig().bag.quantity, this._assets[symbol].getConfig().bag.cost, this._assets[symbol].getConfig().bag.position);
         });
 
         // setup real-time streams
@@ -107,6 +113,52 @@ export class Binance implements IExchange {
             });
         });
     }
+    private _getPortfolio(symbols:Array<string>) {
+		return new Promise((resolve, reject) => {
+			this._rest.account((err:any, data:any) => {
+				var portfolio:{[key:string]:any} = {};
+				if(err) {
+					console.log(err);
+				} else {
+					var balances = _.filter(data.balances, (b:any) => { return symbols.indexOf(b.asset + this._config.quote) > 1 }); // TODO: should be allowed to use Array.includes()
+					_.each(balances, (b:any) => {
+						if(b.asset == this._config.quote) return true; // skip BTC
+						b.weightedAveragePrice = 0;
+						b.totalTradeValue = 0;
+						b.totalTradeQty = 0;
+						portfolio[b.asset] = b;
+						var tradeBNB = [];
+						var tradeBTC = [];
+						var totalQuantity = Math.trunc(Number(b.free) + Number(b.locked)); // TODO: 
+						tradeBTC = wait.for.promise(this._rest.myTrades(b.asset + this._config.quote));
+						if(b.asset != 'BNB') {
+							tradeBNB = wait.for.promise(this._rest.myTrades(b.asset+'BNB'));
+							if(!Array.isArray(tradeBNB)) tradeBNB = []; // some coins does not have BNB pairs
+						}
+						var trades = _.orderBy(tradeBTC.concat(tradeBNB), ['time'], ['desc']);
+						var totalTradeValue = 0;
+						var totalTradeQty = 0;
+						_.each(trades, (trade:any) => {
+							var tradeQty = Number(trade.qty);
+							var tradePrice = Number(trade.price);
+							var modifier = (trade.isBuyer == true ? 1 : -1);
+							totalTradeQty += tradeQty * modifier;
+							// totalTradeQty += trade.commissionAsset == b.asset ? Number(trade.commission) : 0; // subtract the commission
+							totalTradeValue += tradeQty * tradePrice * modifier;
+							if(totalTradeQty >= totalQuantity) {
+								b.weightedAveragePrice = Math.max(0, totalTradeValue / Math.min(totalTradeQty, totalQuantity));
+								b.totalTradeValue = totalTradeValue;
+								b.totalTradeQty = Math.min(totalTradeQty, totalQuantity);
+								return false;
+							}
+						});
+					});
+				}
+				this._events.emit('portfolio', portfolio);
+				resolve(portfolio);
+			});
+		});
+	}
     private _loadTradingView(symbols:string[]) {
         _.each(symbols, (symbol:string) => {
             var config:{[key:string]:any} = this._assets[symbol].getConfig();
