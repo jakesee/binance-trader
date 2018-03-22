@@ -29,11 +29,12 @@ export class Binance implements IExchange {
         var portfolio = wait.for.promise(this._getPortfolio(symbols));
         _.each(symbols, (symbol:string) => {
             this._assets[symbol] = new Asset(symbol, this._config[symbol]);
+            console.log(portfolio);
             var quantity = Math.trunc(Number(portfolio[symbol].free));
 			var cost = Number(portfolio[symbol].weightedAveragePrice);
 			this._assets[symbol].setConfig(this._config[symbol], quantity, cost);
 			
-			log.info(this._assets[symbol].getSymbol(), this._assets[symbol].getConfig().bag.quantity, this._assets[symbol].getConfig().bag.cost, this._assets[symbol].getConfig().bag.position);
+            log.info(this._assets[symbol].getSymbol(), this._assets[symbol].getConfig().bag.quantity, this._assets[symbol].getConfig().bag.cost, this._assets[symbol].getConfig().bag.position);
         });
 
         // setup real-time streams
@@ -105,7 +106,7 @@ export class Binance implements IExchange {
         return new Promise((resolve, reject) => {
             this._rest.cancelOrder(order, (err:any, data:any) => {
                 if (err) {
-                    console.log(err, data);
+                    log.debug(err, data);
                     reject(null);
                 } else {
                     resolve(data);
@@ -118,15 +119,15 @@ export class Binance implements IExchange {
 			this._rest.account((err:any, data:any) => {
 				var portfolio:{[key:string]:any} = {};
 				if(err) {
-					console.log(err);
+					log.debug(err);
 				} else {
-					var balances = _.filter(data.balances, (b:any) => { return symbols.indexOf(b.asset + this._config.quote) > 1 }); // TODO: should be allowed to use Array.includes()
+                    var balances = _.filter(data.balances, (b:any) => { return symbols.indexOf(b.asset + this._config.quote) > -1 }); // TODO: should be allowed to use Array.includes()
 					_.each(balances, (b:any) => {
 						if(b.asset == this._config.quote) return true; // skip BTC
 						b.weightedAveragePrice = 0;
 						b.totalTradeValue = 0;
-						b.totalTradeQty = 0;
-						portfolio[b.asset] = b;
+                        b.totalTradeQty = 0;
+                        portfolio[b.asset + this._config.quote] = b;
 						var tradeBNB = [];
 						var tradeBTC = [];
 						var totalQuantity = Math.trunc(Number(b.free) + Number(b.locked)); // TODO: 
@@ -173,7 +174,7 @@ export class Binance implements IExchange {
                 limit: 500
             }, (err:any, data:any) => {
                 if (err) {
-                    console.log(err);
+                    log.debug(err);
                 } else {
                     // for new coins, if not enough 500 klines, then remaining are undefined
                     this._assets[symbol].klines = _.filter(data, (d:any) => {
@@ -188,7 +189,7 @@ export class Binance implements IExchange {
                 limit: 100
             }, (err:any, data:any) => {
                 if (err) {
-                    console.log(err);
+                    log.debug(err);
                 } else {
                     this._assets[symbol].setBook(data);
                     log.info(symbol, 'book');

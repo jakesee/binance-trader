@@ -56,7 +56,7 @@ export class Asset implements IAsset
     }
     public isTimeToQuery(elapsedTime:number):boolean {
         var tooFrequent = (elapsedTime - this._lastTime) < this.config.frequency
-        return (tooFrequent || !this.isReady());
+        return (!tooFrequent && this.isReady());
     }
     public isReady():boolean {
         return (!_.isEmpty(this._trade)

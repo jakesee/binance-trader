@@ -1,10 +1,9 @@
-import {IExchange, IAsset, POSITION, IKline} from "./exchange/IExchange";
-
 import * as _ from "lodash";
 import * as log from "loglevel";
 import * as tick from "animation-loops";
 import * as wait from "wait-for-stuff";
 import * as technical from "technicalindicators";
+import {IExchange, IAsset, POSITION, IKline} from "./exchange/IExchange";
 var MACD = technical.MACD;
 var BB = technical.BollingerBands;
 var RSI = technical.RSI;
@@ -59,6 +58,7 @@ export class Trader {
 		var shouldBuy = true
 
 		if(shouldBuy && buyStrategy.macd.enabled === true) {
+			// TODO: implement MACD strategy trigger
 			log.debug('MACD not implemented yet');
 		}
 		if(shouldBuy && buyStrategy.rsi.enabled === true) {
@@ -87,6 +87,7 @@ export class Trader {
 			}
 		}
 		if(shouldBuy && buyStrategy.emafast.enabled === true) {
+			console.log("emafast", price, tech);
 			var level = (price / tech.emafast) - 1;
 			log.debug("emafast", level);
 			if((buyStrategy.emafast.trigger < 0 && level > buyStrategy.emafast.trigger)
@@ -296,7 +297,7 @@ export class Trader {
 		var emafast = null; var emaslow = null;
 		var indicator = asset.getConfig().indicator;
 		var strategy = asset.getConfig().strategy;
-		var closes = _.map(asset.getKlines, (kline:IKline) => { return Number(kline.close); });
+		var closes = _.map(asset.getKlines(), (kline:IKline) => { return Number(kline.close); });
 		
 		if(strategy.buy.macd.enabled === true) {
 			var macdInput = {
