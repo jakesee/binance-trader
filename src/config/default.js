@@ -1,4 +1,6 @@
-{
+module.exports = {
+    "logLevel": "debug",
+    "exchange": "binance",
     "quote": "BTC",
     "symbols": ["XVGBTC"],
     "default": {

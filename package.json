@@ -12,11 +12,11 @@
     "wait-for-stuff": "^1.4.0"
   },
   "devDependencies": {
-    "@types/node": "^9.4.7",
+    "@types/node": "^9.6.0",
     "typescript": "^2.7.2"
   },
   "scripts": {
-    "start": "tsc && xcopy src\\config\\*.* build\\config\\*.* /Y && node build/app.js",
+    "start": "tsc && xcopy src\\config\\*.* build\\config\\*.* /Y && cd build && node app.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],
