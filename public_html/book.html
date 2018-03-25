@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>Order Book</title>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/2.0.4/socket.io.js"></script>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/angular.js/1.6.5/angular.min.js"></script>
+	<script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+</head>
+<body ng-app="platform">
+	<div ng-controller="dashboard">
+		<div ng-repeat="symbol in symbols">
+			<div>
+				<ul>
+					<li>Place Bid 0.0000</li>
+					<li>Place Ask 0.0000</li>
+					<li><a href="#" ng-click="clearChart(symbol)">Clear Chart</a></li>
+				</ul>
+				<div id="{{symbol}}-plot"></div>
+			</div>
+		</div>
+	</div>
+</body>
+<script>
+
+var app = angular.module('platform', []);
+app.controller('dashboard', ($scope) => {
+
+	$scope.clearChart = function(symbol) {
+		alert(symbol);
+	}
+
+	$scope.chart = {};
+
+	var socket = io('http://localhost:3001');
+
+	console.log('dsads');
+
+	socket.on('symbol', (symbols) => {
+		$scope.symbols = symbols;
+		for(var i = 0; i < symbols.length; i++) {
+			$scope.chart[symbols[i]]= {
+				resistance: [],
+				support: [],
+				low: [],
+				high: [],
+				mid: [],
+				price: []
+			};
+		}
+		$scope.$apply();
+		console.log(symbols);
+	});
+
+	socket.on('depth', (data) => {
+		
+		// $scope.demand.push((data.demand.volume - data.supply.volume) / data.price);
+		// if($scope.demand.length > 2000) $scope.demand.shift();
+		// var plot = [
+		// 	{ type: 'scatter', y: $scope.demand, name: 'demand' },
+		// ];
+		// var layout = {
+		// 	title: 'Nett Demand Index @ current price',
+		// }
+		// Plotly.newPlot('guide-action', plot, layout);
+
+		$scope.chart[data.symbol].price.push(data.price);
+		$scope.chart[data.symbol].resistance.push(data.supply.price);
+		$scope.chart[data.symbol].support.push(data.demand.price);
+		$scope.chart[data.symbol].high.push(data.high);
+		$scope.chart[data.symbol].low.push(data.low);
+		$scope.chart[data.symbol].mid.push((data.low + data.high) / 2);
+		if($scope.chart[data.symbol].price.length > 2000) $scope.chart[data.symbol].price.shift();
+		if($scope.chart[data.symbol].resistance.length > 2000) $scope.chart[data.symbol].resistance.shift();
+		if($scope.chart[data.symbol].support.length > 2000) $scope.chart[data.symbol].support.shift();
+		if($scope.chart[data.symbol].high.length > 2000) $scope.chart[data.symbol].high.shift();
+		if($scope.chart[data.symbol].low.length > 2000) $scope.chart[data.symbol].low.shift();
+		if($scope.chart[data.symbol].mid.length > 2000) $scope.chart[data.symbol].mid.shift();
+
+		var plot = [
+			{ type: 'scatter', y: $scope.chart[data.symbol].price, name: 'close price' },
+			{ type: 'scatter', y: $scope.chart[data.symbol].resistance, name: 'resistance' },
+			{ type: 'scatter', y: $scope.chart[data.symbol].support, name: 'support' },
+			{ type: 'scatter', y: $scope.chart[data.symbol].high, name: 'high' },
+			{ type: 'scatter', y: $scope.chart[data.symbol].low, name: 'low' },
+			{ type: 'scatter', y: $scope.chart[data.symbol].mid, name: 'mid' },
+		];
+		var layout = {
+			title: data.symbol + ' Resistance and Support Prices',
+		}
+		Plotly.newPlot(data.symbol + '-plot', plot, layout);
+	});
+
+	// $scope.delta = [];
+
+	// socket.on('trade', (data) => {
+	// 	console.log(data.maker, data.price, data.velocity);
+	// 	$scope.delta.push(data.velocity);
+	// 	if($scope.delta.length > 2000) $scope.delta.shift();
+	// 	var plot = [
+	// 		{ type: 'scatter', y: $scope.delta, name: 'delta' },
+	// 		//{ type: 'scatter', y: $scope.supply, name: 'supply' }
+	// 	];
+	// 	var layout = {
+	// 		title: 'Buy & Sell action',
+	// 	}
+	// 	Plotly.newPlot('delta-action', plot, layout);
+	// });
+});
+</script>
+</html>
