@@ -1,5 +1,5 @@
 import * as _ from "lodash";
-import {IAsset, ITrade, POSITION} from "./IExchange";
+import {IAsset, ITrade, POSITION, ISettings} from "./IExchange";
 
 export class Asset implements IAsset
 {
@@ -12,7 +12,7 @@ export class Asset implements IAsset
     private _book:{[key:string]:any} = {};
     private _bookBuffer:object[] = Array();
 
-    constructor(private _symbol:string, public config:{[key:string]:any}) {
+    constructor(private _symbol:string, private _settings:ISettings) {
         
     }
     public getSymbol() {
@@ -41,21 +41,21 @@ export class Asset implements IAsset
 		};
 		return book;
     }
-    public getConfig():{[key:string]:any} {
-        return this.config;
+    public getSettings():ISettings {
+        return this._settings;
     }
-    public setConfig(config:{[key:string]:any}, quantity:number, cost:number):void {
-        this.config = config;
-		if(this.config.bag.quantity == null) this.config.bag.quantity = quantity;
-		if(this.config.bag.cost == null) this.config.bag.cost = cost;
-		this.config.bag.quantity = Math.min(this.config.bag.quantity, quantity);
-		if(this.config.bag.cost > 0) this.initDCA();
+    public setSettings(settings:ISettings, quantity:number, cost:number):void {
+        this._settings = settings;
+		if(this._settings.bag.quantity == null) this._settings.bag.quantity = quantity;
+		if(this._settings.bag.cost == null) this._settings.bag.cost = cost;
+		this._settings.bag.quantity = Math.min(this._settings.bag.quantity, quantity);
+		if(this._settings.bag.cost > 0) this.initDCA();
     }
     public setLastQueryTime(elapsedTime:number):void {
         this._lastTime = elapsedTime;
     }
     public isTimeToQuery(elapsedTime:number):boolean {
-        var tooFrequent = (elapsedTime - this._lastTime) < this.config.frequency
+        var tooFrequent = (elapsedTime - this._lastTime) < this._settings.frequency
         return (!tooFrequent && this.isReady());
     }
     public isReady():boolean {
@@ -63,20 +63,20 @@ export class Asset implements IAsset
 			&& this.klines.length > 0
 			&& !_.isEmpty(this.ticker)
 			&& !_.isEmpty(this._book)
-			&& this.config.bag.quantity != null
-			&& this.config.bag.cost != null);
+			&& this._settings.bag.quantity != null
+			&& this._settings.bag.cost != null);
     }
     public initDCA():void {
         // TODO: this function should be initSellMode, and should be called when trader sucessfully bought asset
-        this.config.bag.dca = _.cloneDeep(this.config.strategy.dca);
+        this._settings.bag.dca = _.cloneDeep(this._settings.strategy.dca);
     }
     public canBuy(quantity:number, price:number):boolean {
-        if(quantity * price < this.config.strategy.buy.minCost) {
+        if(quantity * price < this._settings.strategy.buy.minCost) {
 			return false;
 		} else return true;
     }
     public shouldSell():boolean {
-        if(this.config.bag.quantity > 0 && this.config.bag.cost > 0) {
+        if(this._settings.bag.quantity > 0 && this._settings.bag.cost > 0) {
 			return true;
 		} else {
 			return false;
@@ -87,7 +87,7 @@ export class Asset implements IAsset
         this._trade = trade;
 
         // if we are trailing price, we want to record the lowest and highest price
-		if((this.config.bag.POSITION & POSITION.TRAILING) > 0) {
+		if((this._settings.bag.position & POSITION.TRAILING) > 0) {
 			if(this._tradeLowest == null || (Number(trade.price) < Number(this._tradeLowest.price))) this._tradeLowest = trade;
 			if(this._tradeHighest == null || (Number(trade.price) > Number(this._tradeHighest.price))) this._tradeHighest = trade;
 		} else {

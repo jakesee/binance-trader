@@ -9,6 +9,7 @@ export interface IExchange
 }
 
 export enum POSITION {
+    NONE = 0b000000000,
     BUY = 0b000000001,
     BUYING = 0b000000010,
     BIDDING = 0b000000100,
@@ -26,8 +27,8 @@ export interface IAsset {
     getTradeHighest():ITrade;
     getTicker():ITicker;
     getOrderBook():IOrderBook;
-    getConfig():{[key:string]:any};
-    setConfig(config:{[key:string]:any}, quantity:number, cost:number):void
+    getSettings():ISettings;
+    setSettings(settings:ISettings, quantity:number, cost:number):void
     setLastQueryTime(elaspseTime:number):void;
     isTimeToQuery(elapsedTime:number):boolean;
     isReady():boolean;
@@ -38,7 +39,7 @@ export interface IAsset {
 
 export interface IOrder {
     quantity:number;
-    price:number
+    price:number;
 }
 export interface IOrderBook {
     bids:IOrder[];
@@ -56,4 +57,27 @@ export interface ITicker {
 export interface ITrade {
     price:number;
     quantity:number;
+}
+export class IBag {
+    public order:null|{
+        orderId:number;
+        price:number;
+        quantity:number;
+        side:string;
+    } = null;
+    public cost:number = 0;
+    public quantity:number = 0;
+    public position:POSITION = POSITION.NONE;
+    public bid:number = 0;
+    public bid0:number = 0;
+    public ask:number = 0;
+    public ask0:number = 0;
+    public dca:{
+        levels:number[];
+        enabled:boolean;
+    } = { enabled: false, levels: [] };
+}
+export interface ISettings {
+    bag:IBag;
+    [key: string]:any;
 }

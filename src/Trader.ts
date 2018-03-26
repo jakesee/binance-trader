@@ -3,7 +3,7 @@ import * as log from "loglevel";
 import * as tick from "animation-loops";
 import * as wait from "wait-for-stuff";
 import * as technical from "technicalindicators";
-import {IExchange, IAsset, POSITION, IKline} from "./exchange/IExchange";
+import {IExchange, IAsset, POSITION, IKline, ISettings, IBag} from "./exchange/IExchange";
 var MACD = technical.MACD;
 var BB = technical.BollingerBands;
 var RSI = technical.RSI;
@@ -27,8 +27,8 @@ export class Trader {
 				asset.setLastQueryTime(elapsed);
 
 				var price = Number(asset.getTrade().price);
-				var position = asset.getConfig().bag.position;
-				var quantity = asset.getConfig().bag.quantity;
+				var position = asset.getSettings().bag.position;
+				var quantity = asset.getSettings().bag.quantity;
 
 				if(position == POSITION.BUYING) {
 					this._buying(asset); // trailing buy, buying the lowest possible
@@ -52,8 +52,8 @@ export class Trader {
 		log.debug('buy', asset.getSymbol(), '@', price);
 
 		var tech = this._getTechnicalAnalysis(asset);
-		var buyStrategy = asset.getConfig().strategy.buy;
-		var bag = asset.getConfig().bag;
+		var buyStrategy = asset.getSettings().strategy.buy;
+		var bag = asset.getSettings().bag;
 
 		var shouldBuy = true
 
@@ -106,30 +106,30 @@ export class Trader {
 		if(shouldBuy) {
 			// change state to buying
 			log.debug(asset.getSymbol(), 'shouldBuy now');
-			asset.getConfig().bag.position = POSITION.BUYING;
-			asset.getConfig().bag.bid = price;
-			asset.getConfig().bag.bid0 = price;
-			log.debug(asset.getConfig().bag);
+			asset.getSettings().bag.position = POSITION.BUYING;
+			asset.getSettings().bag.bid = price;
+			asset.getSettings().bag.bid0 = price;
+			log.debug(asset.getSettings().bag);
 			asset.initDCA(); // TODO: this should be called when trader successfully buy asset
 		}
     }
     private _buying(asset:IAsset) {
 		var price = Number(asset.getTradeLowest().price);
-		var bag = asset.getConfig().bag;
+		var bag = asset.getSettings().bag;
 		// trail the falling prices to enter at lowest possible price
-		log.debug('buying', asset.getSymbol(), bag.bid, bag.bid + (bag.bid * asset.getConfig().strategy.buy.trail));
+		log.debug('buying', asset.getSymbol(), bag.bid, bag.bid + (bag.bid * asset.getSettings().strategy.buy.trail));
 		if(price <= bag.bid) {
 			bag.bid = price; // set new price target
 		} else {
-			var stop = bag.bid + (bag.bid * asset.getConfig().strategy.buy.trail);
+			var stop = bag.bid + (bag.bid * asset.getSettings().strategy.buy.trail);
 			if(price > stop && price <= bag.bid0) {
 				// make sure price is less than bag cost otherwise, the overall cost will increase!
 				// once OK, immediately place order
 				var book = asset.getOrderBook();
 				var bid = book.bids[0].price;
 				var ask = book.asks[0].price;
-				if((ask / bid) - 1 < asset.getConfig().strategy.buy.maxBuySpread) { // prevent pump
-					var quantity = Math.ceil(asset.getConfig().strategy.buy.minCost / bid);
+				if((ask / bid) - 1 < asset.getSettings().strategy.buy.maxBuySpread) { // prevent pump
+					var quantity = Math.ceil(asset.getSettings().strategy.buy.minCost / bid);
 					if(bag.quantity > 0) quantity = 2 * bag.quantity;
 					if(!asset.canBuy(quantity, bid)) {
 						bag.position = POSITION.SELL; // just concentrate on selling, the loss is too little
@@ -156,7 +156,7 @@ export class Trader {
 		}
 	}
     private _bidding(asset:IAsset, price:number) {
-		var bag = asset.getConfig().bag;
+		var bag = asset.getSettings().bag;
 		var order = bag.order;
 		if(order != null && bag.position == POSITION.BIDDING) {
 			var book = asset.getOrderBook();
@@ -166,7 +166,7 @@ export class Trader {
 			if(order.price < bid0.price && (bid0.quantity / ask0.quantity) > 1.1) {
 				var cancel = wait.for.promise(this._exchange.cancelOrder(asset.getSymbol(), order.orderId));
 				if(cancel != null) {
-					bag.position = null;
+					bag.position = POSITION.NONE;
 					this._buy(asset, price); // check whether still OK to buy
 				}
 			}
@@ -174,10 +174,10 @@ export class Trader {
 	}
     private _sell(asset:IAsset, price:number) {
 
-		var sellStrategy = asset.getConfig().strategy.sell;
+		var sellStrategy = asset.getSettings().strategy.sell;
 		var shouldSell = true;
-		var cost = asset.getConfig().bag.cost;
-		var quantity = asset.getConfig().bag.quantity;
+		var cost = asset.getSettings().bag.cost;
+		var quantity = asset.getSettings().bag.quantity;
 
 		if(shouldSell && (quantity * cost < sellStrategy.minCost)) {
 			shouldSell = false;
@@ -193,22 +193,22 @@ export class Trader {
 
 		if(shouldSell) {
 			log.debug(asset.getSymbol(), 'shouldSell now');
-			asset.getConfig().bag.position = POSITION.SELLING;
-			asset.getConfig().bag.ask = price;
-			asset.getConfig().bag.ask0 = price;
+			asset.getSettings().bag.position = POSITION.SELLING;
+			asset.getSettings().bag.ask = price;
+			asset.getSettings().bag.ask0 = price;
 		}
 
 		return shouldSell;
     }
     private _selling(asset:IAsset) {
 		var price = Number(asset.getTradeHighest().price);
-		var bag = asset.getConfig().bag;
+		var bag = asset.getSettings().bag;
 
-		log.debug(asset.getSymbol(), 'selling', bag.ask, bag.ask - (bag.ask * asset.getConfig().strategy.sell.trail));
+		log.debug(asset.getSymbol(), 'selling', bag.ask, bag.ask - (bag.ask * asset.getSettings().strategy.sell.trail));
 		if(price > bag.ask) {
 			bag.ask = price;
 		} else {
-			var stop = bag.ask - (bag.ask * asset.getConfig().strategy.sell.trail);
+			var stop = bag.ask - (bag.ask * asset.getSettings().strategy.sell.trail);
 			if(price < stop && price >= bag.ask0) {
 				// immediately place order
 				var book = asset.getOrderBook();
@@ -234,7 +234,7 @@ export class Trader {
 		}
 	}
     private _asking(asset:IAsset, price:number) {
-		var bag = asset.getConfig().bag;
+		var bag = asset.getSettings().bag;
 		var order = bag.order;
 		if(order != null && bag.position == POSITION.ASKING) {
 			var book = asset.getOrderBook();
@@ -244,14 +244,14 @@ export class Trader {
 			if(order.price > ask0.price && (ask0.quantity / bid0.quantity) > 1.1) {
 				var cancel = wait.for.promise(this._exchange.cancelOrder(asset.getSymbol(), order.orderId));
 				if(cancel != null) {
-					bag.position = null;
+					bag.position = POSITION.NONE;
 					this._sell(asset, price); // check whether still OK to sell
 				}
 			}
 		}
     }
     private _dca(asset:IAsset, price:number) {
-		var bag = asset.getConfig().bag;
+		var bag = asset.getSettings().bag;
 
 		if(bag.dca.enabled !== true || bag.dca.levels.length == 0) {
 			// concentrate on selling since cannot DCA anymore
@@ -260,9 +260,9 @@ export class Trader {
 			var nextDCAPrice = bag.cost + (bag.cost * bag.dca.levels[0]);
 			log.debug('dca', asset.getSymbol(), '@', nextDCAPrice);
 			if (price <= nextDCAPrice) {
-				asset.getConfig().bag.position = POSITION.BUYING;
-				asset.getConfig().bag.bid = price;
-				asset.getConfig().bag.bid0 = price;
+				asset.getSettings().bag.position = POSITION.BUYING;
+				asset.getSettings().bag.bid = price;
+				asset.getSettings().bag.bid0 = price;
 				log.debug('dca', asset.getSymbol(), '@', price);
 				bag.dca.levels.shift();
 			}
@@ -271,32 +271,36 @@ export class Trader {
     private _onFilledOrder(data:any) {
 		log.info('bag', data.executionType, data.orderId);
 		var assets = this._exchange.getAssets();
-		// check whether we are cancelling the order we are currently tracking,
+		var settings = assets[data.symbol].getSettings();
+		if(settings.bag.order == null) return; // don't have an order at hand, so the filled order must be manually placed.
+		// otherwise, check whether we are cancelling the order we are currently tracking,
 		// otherwise, it is some other order we don't have to care about.
-		if(data.orderId == assets[data.symbol].getConfig().bag.order.orderId) {
-			assets[data.symbol].getConfig().bag.order = null;
-			assets[data.symbol].getConfig().bag.position = null; // go back to buy mode
-			log.info('bag', data.executionType, data.orderId, assets[data.symbol].getConfig().bag.quantity, assets[data.symbol].getConfig().bag.cost);
+		if(data.orderId == settings.bag.order.orderId) {
+			assets[data.symbol].getSettings().bag.order = null;
+			assets[data.symbol].getSettings().bag.position = POSITION.NONE; // go back to buy mode
+			log.info('bag', data.executionType, data.orderId, assets[data.symbol].getSettings().bag.quantity, assets[data.symbol].getSettings().bag.cost);
 		}
 	}
 
 	private _onCancelOrder(data:any) {
 		log.info('bag', data.executionType, data.orderId);
 		var assets = this._exchange.getAssets();
+		var settings = assets[data.symbol].getSettings();
+		if(settings.bag.order == null) return; // don't have an order at hand, so the filled order must be manually placed.
 		// check whether we are cancelling the order we are currently tracking,
 		// otherwise, it is some other order we don't have to care about.
-		if(data.orderId == assets[data.symbol].getConfig().bag.order.orderId) {
-			assets[data.symbol].getConfig().bag.order = null;
-			assets[data.symbol].getConfig().bag.position = null; // go back to buy mode
-			log.info('bag', data.executionType, data.orderId, assets[data.symbol].getConfig().bag.quantity, assets[data.symbol].getConfig().bag.cost);
+		if(data.orderId == settings.bag.order.orderId) {
+			assets[data.symbol].getSettings().bag.order = null;
+			assets[data.symbol].getSettings().bag.position = POSITION.NONE; // go back to buy mode
+			log.info('bag', data.executionType, data.orderId, assets[data.symbol].getSettings().bag.quantity, assets[data.symbol].getSettings().bag.cost);
 		}
     }
     
     private _getTechnicalAnalysis(asset:IAsset) {
 		var macd = null; var bb = null; var rsi = null;
 		var emafast = null; var emaslow = null;
-		var indicator = asset.getConfig().indicator;
-		var strategy = asset.getConfig().strategy;
+		var indicator = asset.getSettings().indicator;
+		var strategy = asset.getSettings().strategy;
 		var closes = _.map(asset.getKlines(), (kline:IKline) => { return Number(kline.close); });
 		
 		if(strategy.buy.macd.enabled === true) {

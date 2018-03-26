@@ -1,7 +1,7 @@
 import * as _ from "lodash";
 import * as log from "loglevel";
 import * as fs from "fs";
-import {IExchange} from "./exchange/IExchange";
+import {IExchange, ISettings, IBag} from "./exchange/IExchange";
 
 // load all the exchanges
 import {Binance} from "./exchange/Binance";
@@ -55,10 +55,9 @@ export class Bootstrap {
                 return;
             } else {
                 _.each(this._config.symbols, (symbol:string) => {
-                    if(!_.has(this._config, symbol)) this._config[symbol] = {};
+                    let settings:ISettings = { bag: new IBag() }
+                    if(!_.has(this._config, symbol)) this._config[symbol] = settings;
                     _.defaultsDeep(this._config[symbol], _.cloneDeep(this._config.default));
-                    this._config[symbol].bag.order = null;
-                    this._config[symbol].bag.position = null;
                 });
             }
     

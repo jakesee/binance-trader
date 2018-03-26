@@ -2,7 +2,7 @@ module.exports = {
     "logLevel": "debug",
     "exchange": "binance",
     "quote": "BTC",
-    "symbols": ["XVGBTC"],
+    "symbols": ["SALTBTC"],
     "default": {
       "bag": {
           "quantity": null,
@@ -11,7 +11,7 @@ module.exports = {
       "frequency": 5000,
       "indicator": {
           "kline": {
-            "interval": "30m"
+            "interval": "1m"
           },
           "bb": {
             "period": 20,

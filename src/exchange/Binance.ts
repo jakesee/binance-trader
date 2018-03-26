@@ -32,9 +32,9 @@ export class Binance implements IExchange {
             console.log(portfolio);
             var quantity = Math.trunc(Number(portfolio[symbol].free));
 			var cost = Number(portfolio[symbol].weightedAveragePrice);
-			this._assets[symbol].setConfig(this._config[symbol], quantity, cost);
+			this._assets[symbol].setSettings(this._config[symbol], quantity, cost);
 			
-            log.info(this._assets[symbol].getSymbol(), this._assets[symbol].getConfig().bag.quantity, this._assets[symbol].getConfig().bag.cost, this._assets[symbol].getConfig().bag.position);
+            log.info(this._assets[symbol].getSymbol(), this._assets[symbol].getSettings().bag.quantity, this._assets[symbol].getSettings().bag.cost, this._assets[symbol].getSettings().bag.position);
         });
 
         // setup real-time streams
@@ -162,7 +162,7 @@ export class Binance implements IExchange {
 	}
     private _loadTradingView(symbols:string[]) {
         _.each(symbols, (symbol:string) => {
-            var config:{[key:string]:any} = this._assets[symbol].getConfig();
+            var config:{[key:string]:any} = this._assets[symbol].getSettings();
             // NOTE: 
             /*
                 binance API this._rest.klines returns results in array index 0 to max 499, from oldest to newest candle
@@ -220,7 +220,7 @@ export class Binance implements IExchange {
     private _loadKlineStream(symbols:string[]) {
         const streams = this._binanceWS.streams;
         var assets = _.map(symbols, (symbol:string) => {
-            return streams.kline(symbol, this._assets[symbol].config.indicator.kline.interval)
+            return streams.kline(symbol, this._assets[symbol].getSettings().indicator.kline.interval)
         });
         this._binanceWS.onCombinedStream(assets, (streamEvent:any) => {
             var symbol = streamEvent.data.symbol;
@@ -304,7 +304,7 @@ export class Binance implements IExchange {
         var side = data.side;
         var price = Number(data.lastTradePrice);
         var lastTradeQuantity = Number(data.lastTradeQuantity);
-        var bag = this._assets[data.symbol].config.bag;
+        var bag = this._assets[data.symbol].getSettings().bag;
         let totalQty;
 
         if (side == 'BUY') {
