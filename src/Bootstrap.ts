@@ -29,6 +29,11 @@ export class Bootstrap {
         this._config["logLevel"] = this._config["logLevel"] || "trace";
         log.setLevel(this._config["logLevel"]);
 
+        // override config with commandline supplied exchange name
+        if(true == !!process.argv[2] && EXCHANGES.indexOf(process.argv[2]) >= 0) {
+            this._config['exchange'] = process.argv[2];
+        }
+
         // check for mandatory configuration
         if(!_.has(this._config, 'exchange') || EXCHANGES.indexOf(this._config.exchange) < 0) {
             log.error("config.exchange is undefined or unrecognized.");
@@ -77,6 +82,7 @@ export class Bootstrap {
         }
     }
 
+    // factory create the exchange object based on config or supplied commandline argument
     private _createExchange(exchange:string) {
         switch(exchange) {
             case "binance":
