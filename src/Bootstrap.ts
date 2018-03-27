@@ -55,8 +55,7 @@ export class Bootstrap {
                 return;
             } else {
                 _.each(this._config.symbols, (symbol:string) => {
-                    let settings:ISettings = { bag: new IBag() }
-                    if(!_.has(this._config, symbol)) this._config[symbol] = settings;
+                    if(!_.has(this._config, symbol)) this._config[symbol] = {};
                     _.defaultsDeep(this._config[symbol], _.cloneDeep(this._config.default));
                 });
             }

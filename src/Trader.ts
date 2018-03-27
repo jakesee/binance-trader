@@ -31,11 +31,11 @@ export class Trader {
 				var quantity = asset.getSettings().bag.quantity;
 
 				if(position == POSITION.BUYING) {
-					this._buying(asset); // trailing buy, buying the lowest possible
+					this._buying(asset, price); // trailing buy, buying the lowest possible
 				} else if(position == POSITION.BIDDING) {
 					this._bidding(asset, price); // bid placed, waiting for taker
 				} else if(position == POSITION.SELLING) {
-					this._selling(asset); // trailing sell if price goes up;
+					this._selling(asset, price); // trailing sell if price goes up;
 				} else if(position == POSITION.ASKING) {
 					this._asking(asset, price); // asking price offered, waiting for taker
 				} else if(position == POSITION.SELL) {
@@ -87,7 +87,6 @@ export class Trader {
 			}
 		}
 		if(shouldBuy && buyStrategy.emafast.enabled === true) {
-			console.log("emafast", price, tech);
 			var level = (price / tech.emafast) - 1;
 			log.debug("emafast", level);
 			if((buyStrategy.emafast.trigger < 0 && level > buyStrategy.emafast.trigger)
@@ -113,46 +112,43 @@ export class Trader {
 			asset.initDCA(); // TODO: this should be called when trader successfully buy asset
 		}
     }
-    private _buying(asset:IAsset) {
-		var price = Number(asset.getTradeLowest().price);
+    private _buying(asset:IAsset, price:number) {
 		var bag = asset.getSettings().bag;
+		bag.bid = Number(asset.getTradeLowest().price); // update lowest price
+		var stop = bag.bid + (bag.bid * asset.getSettings().strategy.buy.trail);
 		// trail the falling prices to enter at lowest possible price
-		log.debug('buying', asset.getSymbol(), bag.bid, bag.bid + (bag.bid * asset.getSettings().strategy.buy.trail));
-		if(price <= bag.bid) {
-			bag.bid = price; // set new price target
-		} else {
-			var stop = bag.bid + (bag.bid * asset.getSettings().strategy.buy.trail);
-			if(price > stop && price <= bag.bid0) {
-				// make sure price is less than bag cost otherwise, the overall cost will increase!
-				// once OK, immediately place order
-				var book = asset.getOrderBook();
-				var bid = book.bids[0].price;
-				var ask = book.asks[0].price;
-				if((ask / bid) - 1 < asset.getSettings().strategy.buy.maxBuySpread) { // prevent pump
-					var quantity = Math.ceil(asset.getSettings().strategy.buy.minCost / bid);
-					if(bag.quantity > 0) quantity = 2 * bag.quantity;
-					if(!asset.canBuy(quantity, bid)) {
-						bag.position = POSITION.SELL; // just concentrate on selling, the loss is too little
-						return;
-					}
-					var order = wait.for.promise(this._exchange.placeBuyLimit(asset.getSymbol(), quantity, bid));
-					if(order != null) {
-						bag.order = {
-							'side': 'BUY',
-							'orderId': order.orderId,
-							'price': Number(order.price),
-							'quantity': Number(order.origQty)
-						}
-						log.info('buy limit', asset.getSymbol(), quantity, bid, bag.order);
-						bag.position = POSITION.BIDDING;
-					} else {
-						log.error('buy limit error', asset.getSymbol(), quantity, bid, price);
-						bag.position = POSITION.BUY;
-					}
+		log.debug('buying', asset.getSymbol(), "trigger:", bag.bid0, "best:", bag.bid, "price", price, "stop:", bag.bid + (bag.bid * asset.getSettings().strategy.buy.trail));
+		if(price >= stop && price <= bag.bid0) {
+			// make sure price is less than bag cost otherwise, the overall cost will increase!
+			// once OK, immediately place order
+			var book = asset.getOrderBook();
+			var bid = book.bids[0].price;
+			var ask = book.asks[0].price;
+			console.log("spread", (ask / bid) - 1, asset.getSettings().strategy.buy.maxBuySpread);
+			if((ask / bid) - 1 < asset.getSettings().strategy.buy.maxBuySpread) { // prevent pump
+				var quantity = Math.ceil(asset.getSettings().strategy.buy.minCost / bid);
+				if(bag.quantity > 0) quantity = 2 * bag.quantity;
+				if(!asset.canBuy(quantity, bid)) {
+					bag.position = POSITION.SELL; // just concentrate on selling, the loss is too little
+					return;
 				}
-			} else if(price > bag.bid0) {
-				bag.position = POSITION.BUY;
+				var order = wait.for.promise(this._exchange.placeBuyLimit(asset.getSymbol(), quantity, bid));
+				if(order != null) {
+					bag.order = {
+						'side': 'BUY',
+						'orderId': order.orderId,
+						'price': Number(order.price),
+						'quantity': Number(order.origQty)
+					}
+					log.info('buy limit', asset.getSymbol(), quantity, bid, bag.order);
+					bag.position = POSITION.BIDDING;
+				} else {
+					log.error('buy limit error', asset.getSymbol(), quantity, bid, price);
+					bag.position = POSITION.BUY;
+				}
 			}
+		} else if(price > bag.bid0) {
+			bag.position = POSITION.BUY;
 		}
 	}
     private _bidding(asset:IAsset, price:number) {
@@ -200,37 +196,32 @@ export class Trader {
 
 		return shouldSell;
     }
-    private _selling(asset:IAsset) {
-		var price = Number(asset.getTradeHighest().price);
+    private _selling(asset:IAsset, price:number) {
 		var bag = asset.getSettings().bag;
-
+		bag.ask = Number(asset.getTradeHighest().price);
 		log.debug(asset.getSymbol(), 'selling', bag.ask, bag.ask - (bag.ask * asset.getSettings().strategy.sell.trail));
-		if(price > bag.ask) {
-			bag.ask = price;
-		} else {
-			var stop = bag.ask - (bag.ask * asset.getSettings().strategy.sell.trail);
-			if(price < stop && price >= bag.ask0) {
-				// immediately place order
-				var book = asset.getOrderBook();
-				var ask = book.asks[0].price;
-				var quantity = bag.quantity;
-				var order = wait.for.promise(this._exchange.placeSellLimit(asset.getSymbol(), quantity, ask));
-				if(order != null) {
-					bag.order = {
-						'side': 'SELL',
-						'orderId': order.orderId,
-						'price': Number(order.price),
-						'quantity': Number(order.origQty)
-					}
-					log.info('sell limit', asset.getSymbol(), quantity, ask, bag.order);
-					bag.position = POSITION.ASKING;
-				} else {
-					log.error('sell limit error', asset.getSymbol(), quantity, ask, price);
-					bag.position = POSITION.SELL;
+		var stop = bag.ask - (bag.ask * asset.getSettings().strategy.sell.trail);
+		if(price < stop && price >= bag.ask0) {
+			// immediately place order
+			var book = asset.getOrderBook();
+			var ask = book.asks[0].price;
+			var quantity = bag.quantity;
+			var order = wait.for.promise(this._exchange.placeSellLimit(asset.getSymbol(), quantity, ask));
+			if(order != null) {
+				bag.order = {
+					'side': 'SELL',
+					'orderId': order.orderId,
+					'price': Number(order.price),
+					'quantity': Number(order.origQty)
 				}
-			} else if(price < bag.ask0) {
+				log.info('sell limit', asset.getSymbol(), quantity, ask, bag.order);
+				bag.position = POSITION.ASKING;
+			} else {
+				log.error('sell limit error', asset.getSymbol(), quantity, ask, price);
 				bag.position = POSITION.SELL;
 			}
+		} else if(price < bag.ask0) {
+			bag.position = POSITION.SELL;
 		}
 	}
     private _asking(asset:IAsset, price:number) {

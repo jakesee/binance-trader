@@ -25,6 +25,8 @@ export interface IAsset {
     getTrade():ITrade;
     getTradeLowest():ITrade;
     getTradeHighest():ITrade;
+    getTradeSellerWin():ITrade;
+    getTradeBuyerWin():ITrade;
     getTicker():ITicker;
     getOrderBook():IOrderBook;
     getSettings():ISettings;
@@ -57,6 +59,7 @@ export interface ITicker {
 export interface ITrade {
     price:number;
     quantity:number;
+    maker:boolean; // Is the buyer the market maker?
 }
 export class IBag {
     public order:null|{

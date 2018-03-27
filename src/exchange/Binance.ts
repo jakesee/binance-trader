@@ -265,22 +265,18 @@ export class Binance implements IExchange {
     private _loadUserDataStream() {
         this._binanceWS.onUserData(this._rest, (streamData:any) => {
             this._events.emit('user', streamData);
-            console.log('USERDATASTREAM 1', streamData.symbol, streamData.eventType, streamData.executionType, streamData.orderStatus);
             if (!(this._assets.hasOwnProperty(streamData.symbol))) return;
 
             if (streamData.eventType === 'outboundAccountInfo') {
                 // TODO: update account balances
             } else if (streamData.eventType === 'executionReport') {
-                console.log('USERDATASTREAM 2', streamData.symbol, streamData.eventType, streamData.executionType, streamData.orderStatus);
                 if (streamData.executionType == 'CANCELED') {
                     this._events.emit('CANCELED', streamData);
                 } else if (streamData.executionType == 'NEW') {
                     this._events.emit('NEW', streamData);
                 } else if (streamData.executionType == 'TRADE' && streamData.orderStatus == 'PARTIALLY_FILLED') {
-                    console.log('USERDATASTREAM 3', streamData.symbol, streamData.eventType, streamData.executionType, streamData.orderStatus);
                     this._onUDSTradePartiallyFilled(streamData);
                 } else if (streamData.executionType == 'TRADE' && streamData.orderStatus == 'FILLED') {
-                    console.log('USERDATASTREAM 4', streamData.symbol, streamData.eventType, streamData.executionType, streamData.orderStatus);
                     this._onUDSTradeFilled(streamData);
                 }
             }

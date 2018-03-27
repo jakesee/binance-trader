@@ -9,6 +9,8 @@ export class Asset implements IAsset
     private _trade:any = {}; // latest trade information
     private _tradeLowest:any = {}; // latest trade information
     private _tradeHighest:any = {}; // latest trade information
+    private _tradeBuyerWin:any = {}; // latest bought information
+    private _tradeSellerWin:any = {}; // latest sold information
     private _book:{[key:string]:any} = {};
     private _bookBuffer:object[] = Array();
 
@@ -29,6 +31,12 @@ export class Asset implements IAsset
     }
     public getTradeHighest():ITrade {
         return this._tradeHighest;
+    }
+    public getTradeSellerWin():ITrade {
+        return this._tradeSellerWin;
+    }
+    public getTradeBuyerWin():ITrade {
+        return this._tradeBuyerWin;
     }
     public getTicker():any {
         return this.ticker;
@@ -85,6 +93,8 @@ export class Asset implements IAsset
 
     public updateTrade(trade:ITrade):void {
         this._trade = trade;
+        if(trade.maker == true) this._tradeBuyerWin = trade; // buyer win trade
+        else this._tradeSellerWin = trade; // seller win trade
 
         // if we are trailing price, we want to record the lowest and highest price
 		if((this._settings.bag.position & POSITION.TRAILING) > 0) {
