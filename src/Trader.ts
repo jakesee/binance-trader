@@ -59,7 +59,24 @@ export class Trader {
 
 		if(shouldBuy && buyStrategy.macd.enabled === true) {
 			// TODO: implement MACD strategy trigger
-			log.debug('MACD not implemented yet');
+			// tech.macd[0].MACD
+			// tech.macd[0].signal
+			// tech.macd[0].histogram
+			// last element in tech.macd is the most recent value
+			var macd = tech.macd;
+			for(var i = 0; i < macd.length; i++) {
+				macd[i].level = (macd[i].MACD / macd[i].signal) - 1;
+				macd[i].diff = macd[i].MACD - macd[i].signal;
+				macd[i].height = macd[i].signal / price;
+			}
+			var crossed:boolean = macd[0].diff * macd[1].diff < 0 || macd[1].diff * macd[2].diff < 0;
+			var upup = macd[0].MACD < macd[1].MACD && macd[1].MACD < macd[2].MACD;
+			var downdown = macd[0].MACD > macd[1].MACD && macd[1].MACD > macd[2].MACD;
+			var updown = macd[0].MACD < macd[1].MACD && macd[1].MACD > macd[2].MACD;
+			var downup = macd[0].MACD > macd[1].MACD && macd[1].MACD < macd[2].MACD;
+			// NOTE: if MACD is straight then we cannot say anything about the direction.
+			// TODO: may need to use more data points
+			log.debug("MACD not implemented yet");
 		}
 		if(shouldBuy && buyStrategy.rsi.enabled === true) {
 			if(tech.rsi[0] > buyStrategy.rsi.trigger)
@@ -299,7 +316,7 @@ export class Trader {
 				'SimpleMAOscillator': false,
 	  			'SimpleMASignal': false,
 			}
-			macd = _.takeRight(MACD.calculate(macdInput), 1); // we need this many data points to decide on buy
+			macd = _.takeRight(MACD.calculate(macdInput), 3); // we need this many data points to decide on buy
 		}
 		if(strategy.buy.bb.enabled === true) {
 			var bbInput = {
