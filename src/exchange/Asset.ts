@@ -90,7 +90,10 @@ export class Asset implements IAsset
 			return false;
 		}
     }
-
+    public clearOrder():void {
+        this._settings.bag.position = POSITION.NONE;
+        this._settings.bag.order = null;
+    }
     public updateTrade(trade:ITrade):void {
         this._trade = trade;
         if(trade.maker == true) this._tradeBuyerWin = trade; // buyer win trade

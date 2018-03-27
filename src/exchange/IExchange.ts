@@ -37,6 +37,7 @@ export interface IAsset {
     initDCA():void; // TODO: this should be initSellMode()
     canBuy(quantity:number, price:number):boolean;
     shouldSell():boolean;
+    clearOrder():void;
 }
 
 export interface IOrder {

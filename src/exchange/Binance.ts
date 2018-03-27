@@ -294,6 +294,7 @@ export class Binance implements IExchange {
         /* Update bag:
             config.bag.quantity --- quantity available for trading
             config.bag.cost --- weighted average cost of bag
+            TODO: this is actually not a good design, the individual asset should update the bag themselves
         */
         log.info(data.side, data.orderId, data.executionType, data.lastTradeQuantity, data.lastTradePrice);
         var symbol = data.symbol;

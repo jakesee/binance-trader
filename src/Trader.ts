@@ -162,13 +162,13 @@ export class Trader {
 			if(order.price < bid0.price && (bid0.quantity / ask0.quantity) > 1.1) {
 				var cancel = wait.for.promise(this._exchange.cancelOrder(asset.getSymbol(), order.orderId));
 				if(cancel != null) {
-					bag.position = POSITION.NONE;
+					asset.clearOrder();
 					this._buy(asset, price); // check whether still OK to buy
 				}
 			}
 		}
 	}
-    private _sell(asset:IAsset, price:number) {
+    private _sell(asset:IAsset, price:number):boolean {
 
 		var sellStrategy = asset.getSettings().strategy.sell;
 		var shouldSell = true;
@@ -235,7 +235,7 @@ export class Trader {
 			if(order.price > ask0.price && (ask0.quantity / bid0.quantity) > 1.1) {
 				var cancel = wait.for.promise(this._exchange.cancelOrder(asset.getSymbol(), order.orderId));
 				if(cancel != null) {
-					bag.position = POSITION.NONE;
+					asset.clearOrder();
 					this._sell(asset, price); // check whether still OK to sell
 				}
 			}
@@ -244,7 +244,7 @@ export class Trader {
     private _dca(asset:IAsset, price:number) {
 		var bag = asset.getSettings().bag;
 
-		if(bag.dca.enabled !== true || bag.dca.levels.length == 0) {
+		if(bag.dca.enabled === false || bag.dca.levels.length == 0) {
 			// concentrate on selling since cannot DCA anymore
 			bag.position = POSITION.SELL;
 		} else {
@@ -261,30 +261,26 @@ export class Trader {
 	}
     private _onFilledOrder(data:any) {
 		log.info('bag', data.executionType, data.orderId);
-		var assets = this._exchange.getAssets();
-		var settings = assets[data.symbol].getSettings();
+		var asset = this._exchange.getAssets()[data.symbol];
+		var settings = asset.getSettings();
 		if(settings.bag.order == null) return; // don't have an order at hand, so the filled order must be manually placed.
 		// otherwise, check whether we are cancelling the order we are currently tracking,
-		// otherwise, it is some other order we don't have to care about.
 		if(data.orderId == settings.bag.order.orderId) {
-			assets[data.symbol].getSettings().bag.order = null;
-			assets[data.symbol].getSettings().bag.position = POSITION.NONE; // go back to buy mode
-			log.info('bag', data.executionType, data.orderId, assets[data.symbol].getSettings().bag.quantity, assets[data.symbol].getSettings().bag.cost);
-		}
+			asset.clearOrder();
+			log.info('bag', data.executionType, data.orderId, asset.getSettings().bag.quantity, asset.getSettings().bag.cost);
+		} // otherwise, it is some other order we don't have to care about.
 	}
 
 	private _onCancelOrder(data:any) {
 		log.info('bag', data.executionType, data.orderId);
-		var assets = this._exchange.getAssets();
-		var settings = assets[data.symbol].getSettings();
+		var asset = this._exchange.getAssets()[data.symbol];
+		var settings = asset.getSettings();
 		if(settings.bag.order == null) return; // don't have an order at hand, so the filled order must be manually placed.
-		// check whether we are cancelling the order we are currently tracking,
-		// otherwise, it is some other order we don't have to care about.
+		// otherwise, check whether we are cancelling the order we are currently tracking,
 		if(data.orderId == settings.bag.order.orderId) {
-			assets[data.symbol].getSettings().bag.order = null;
-			assets[data.symbol].getSettings().bag.position = POSITION.NONE; // go back to buy mode
-			log.info('bag', data.executionType, data.orderId, assets[data.symbol].getSettings().bag.quantity, assets[data.symbol].getSettings().bag.cost);
-		}
+			asset.clearOrder();
+			log.info('bag', data.executionType, data.orderId, asset.getSettings().bag.quantity, asset.getSettings().bag.cost);
+		} // otherwise, it is some other order we don't have to care about.
     }
     
     private _getTechnicalAnalysis(asset:IAsset) {
