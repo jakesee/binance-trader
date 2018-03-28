@@ -1,5 +1,5 @@
 import * as config from "config";
-require('./dev.json');
+// require('./dev.json');
 
 export class Config {
     static readonly port = config.get('port');
