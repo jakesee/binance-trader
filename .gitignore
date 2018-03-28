@@ -19,3 +19,7 @@ node_modules
 temp*
 dev.json
 secret.json
+
+build
+“
+.bashrc

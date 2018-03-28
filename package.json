@@ -10,7 +10,7 @@
     "lodash": "^4.17.5",
     "loglevel": "^1.6.1",
     "socket.io": "^2.0.4",
-    "technicalindicators": "^1.1.8",
+    "technicalindicators": "1.0.19",
     "wait-for-stuff": "^1.4.0"
   },
   "devDependencies": {
@@ -18,7 +18,8 @@
     "typescript": "^2.7.2"
   },
   "scripts": {
-    "start": "tsc && xcopy src\\config\\*.* build\\config\\*.* /Y && cd build && node app.js",
+    "start_win": "tsc && xcopy src\\config\\*.* build\\config\\*.* /Y && cd build && node app.js",
+    "start_mac": "tsc && cp -a ./src/config/. ./build/config/ && cd build && node app.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],

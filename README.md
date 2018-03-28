@@ -4,8 +4,12 @@ This is still work-in-progress
 # Installation
 npm install
 create .env file with api key and secret
-configure settings in config/default.json file
-heroku local:run node app
+configure settings in config/default.js file
+
+Window:
+> npm run start_win
+Mac
+> npm run start_mac
 
 # Organisation
 * app.js - entry point of application
