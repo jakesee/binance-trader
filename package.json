@@ -21,7 +21,7 @@
   "scripts": {
     "start": "cd build && node app.js",
     "test": "echo \"Error: no test specified\" && exit 1",
-    "build": "tsc && cpx \"src\\config\\*.*\" build\\config --verbose",
+    "build": "tsc && cpx \"src/config/*.*\" build/config --verbose",
     "postinstall": "npm run-script build"
   },
   "keywords": [],
