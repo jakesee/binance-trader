@@ -49,11 +49,15 @@ export class Trader {
         });
     }
     private _buy(asset:IAsset, price:number) {
-		log.debug('buy', asset.getSymbol(), '@', price);
 
-		var tech = this._getTechnicalAnalysis(asset);
-		var buyStrategy = asset.getSettings().strategy.buy;
+		var buyStrategy = asset.getSettings().strategy.buy;		
+		if (buyStrategy.enabled === false) {
+			log.info("buy disabled", asset.getSymbol());
+			return;
+		}
+		log.debug('buy', asset.getSymbol(), '@', price);
 		var bag = asset.getSettings().bag;
+		var tech = this._getTechnicalAnalysis(asset);
 
 		var shouldBuy = true
 
@@ -188,7 +192,12 @@ export class Trader {
     private _sell(asset:IAsset, price:number):boolean {
 
 		var sellStrategy = asset.getSettings().strategy.sell;
+		if(sellStrategy.enabled === false) {
+			log.info("sell disabled", asset.getSymbol());
+			return false; // return shouldSell = false
+		}
 		var shouldSell = true;
+
 		var cost = asset.getSettings().bag.cost;
 		var quantity = asset.getSettings().bag.quantity;
 

@@ -15,11 +15,14 @@
   },
   "devDependencies": {
     "@types/node": "^9.6.0",
+    "cpx": "^1.5.0",
     "typescript": "^2.7.2"
   },
   "scripts": {
-    "start": "tsc && xcopy src\\config\\*.* build\\config\\*.* /Y && cd build && node app.js",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "start": "cd build && node app.js",
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "tsc && cpx src\\config\\*.* build\\config\\*.*",
+    "postinstall": "npm run-script build"
   },
   "keywords": [],
   "author": "",

@@ -32,6 +32,7 @@ module.exports = {
       },
       "strategy": {
           "buy": {
+            "enabled": false,
             "minCost": 0.002,
             "maxCost": 0.005,
             "maxBuySpread": 0.02,
@@ -66,6 +67,7 @@ module.exports = {
             }
           },
           "sell": {
+            "enabled": false,
             "minCost": 0.002,
             "trail": 0.0002,
             "gain": {
