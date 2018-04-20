@@ -3,4 +3,4 @@
 #
 # heroku run node app.js
 #
-worker: node start
+worker: npm start
