@@ -2,7 +2,7 @@ module.exports = {
     "logLevel": "debug",
     "exchange": "binance",
     "quote": "BTC",
-    "symbols": ["XVGBTC"],
+    "symbols": ["REQBTC","SALTBTC"],
     "default": {
       "bag": {
           "quantity": null,
@@ -67,7 +67,7 @@ module.exports = {
             }
           },
           "sell": {
-            "enabled": false,
+            "enabled": true,
             "minCost": 0.002,
             "trail": 0.0002,
             "gain": {
