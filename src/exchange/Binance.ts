@@ -123,7 +123,7 @@ export class Binance implements IExchange {
 				} else {
                     var balances = _.filter(data.balances, (b:any) => { return symbols.indexOf(b.asset + this._config.quote) > -1 }); // TODO: should be allowed to use Array.includes()
 					_.each(balances, (b:any) => {
-						if(b.asset == this._config.quote) return true; // skip BTC
+						if(b.asset == this._config.quote) return true; // skip quote currency
 						b.weightedAveragePrice = 0;
 						b.totalTradeValue = 0;
                         b.totalTradeQty = 0;
