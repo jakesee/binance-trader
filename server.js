@@ -4,7 +4,8 @@ var app = express();
 var server = require('http').Server(app);
 var io = require('socket.io')(server);
 
-server.listen(4434, ()=> console.log('listening'));
+var port = process.env.PORT || 4434;
+server.listen(port, ()=> console.log('listening', port));
 app.use(express.static(__dirname + '/dist'));
 
 app.get('/', function (req, res) {
