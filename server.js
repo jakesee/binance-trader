@@ -1,26 +1,22 @@
-const express = require('express');
-const server = express();
-const path = require('path');\
-const SocketIO = require('socket.io');
+// var tick = require(tick);
+var express = require('express');
+var app = express();
+var server = require('http').Server(app);
+var io = require('socket.io')(server);
 
-server.use(express.static(__dirname + '/dist'));
+server.listen(4434, ()=> console.log('listening'));
+app.use(express.static(__dirname + '/dist'));
 
-var port = process.env.PORT || 4434;
-var index = __dirname + '/dist/index.html';
-
-server.listen(port);
-
-server.get('/*', function(request, response) {
-    response.sendFile(path.join(index));
+app.get('/', function (req, res) {
+  var index = path.join(__dirname, '/dist/index.html')
+  res.sendfile(index);
 });
 
-console.log('Listening on', port);
-
-const io = SocketIO(server);
-
-io.on('connection', (socket) => {
-    console.log('client connected');
-    socket.on('disconnect', () => console.log('client disconnected'));
+io.on('connection', function (socket) {
+  socket.emit('news', { hello: 'world' });
+  socket.on('my other event', function (data) {
+    console.log(data);
+  });
 });
 
 setInterval(() => io.emit('time', new Date().toTimeString()), 1000);
