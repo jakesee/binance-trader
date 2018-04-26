@@ -17,6 +17,7 @@
 					<li><a href="#" ng-click="clearChart(symbol)">Clear Chart</a></li>
 				</ul>
 				<div id="{{symbol}}-plot"></div>
+				<div id="{{symbol}}-plot-bids"></div>
 			</div>
 		</div>
 	</div>
@@ -45,7 +46,9 @@ app.controller('dashboard', ($scope) => {
 				low: [],
 				high: [],
 				mid: [],
-				price: []
+				price: [],
+				bidsQty: [],
+				bidsPrice: [],
 			};
 		}
 		$scope.$apply();
@@ -53,7 +56,7 @@ app.controller('dashboard', ($scope) => {
 	});
 
 	socket.on('depth', (data) => {
-		
+		console.log(data.symbol, data.bidsQty);
 		// $scope.demand.push((data.demand.volume - data.supply.volume) / data.price);
 		// if($scope.demand.length > 2000) $scope.demand.shift();
 		// var plot = [
@@ -70,6 +73,8 @@ app.controller('dashboard', ($scope) => {
 		$scope.chart[data.symbol].high.push(data.high);
 		$scope.chart[data.symbol].low.push(data.low);
 		$scope.chart[data.symbol].mid.push((data.low + data.high) / 2);
+		$scope.chart[data.symbol].bidsQty = data.bidsQty;
+		$scope.chart[data.symbol].bidsPrice = data.bidsPrice;
 		if($scope.chart[data.symbol].price.length > 2000) $scope.chart[data.symbol].price.shift();
 		if($scope.chart[data.symbol].resistance.length > 2000) $scope.chart[data.symbol].resistance.shift();
 		if($scope.chart[data.symbol].support.length > 2000) $scope.chart[data.symbol].support.shift();
@@ -89,6 +94,11 @@ app.controller('dashboard', ($scope) => {
 			title: data.symbol + ' Resistance and Support Prices',
 		}
 		Plotly.newPlot(data.symbol + '-plot', plot, layout);
+
+		plot = [
+			{ type: 'bar', y: $scope.chart[data.symbol].bidsQty, x: $scope.chart[data.symbol].bidsPrice }
+		]
+		Plotly.newPlot(data.symbol + '-plot-bids', plot, layout);
 	});
 
 	// $scope.delta = [];

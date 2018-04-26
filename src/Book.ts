@@ -88,7 +88,9 @@ class App {
                 supply: supply,
                 price: symbol.getTrade().price,
                 low: low,
-                high: high
+                high: high,
+                bidsQty: _.map(book.bids, (bid:IOrder) => { return bid.quantity }),
+                bidsPrice: _.map(book.bids, (bid:IOrder) => { return bid.price })
             });
         });
     }
