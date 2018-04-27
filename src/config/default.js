@@ -2,7 +2,7 @@ module.exports = {
     "logLevel": "debug",
     "exchange": "binance",
     "quote": "BTC",
-    "symbols": ["SALTBTC","IOSTBTC","DNTBTC","ONTBTC","TRIGBTC","POABTC","MCOBTC"],
+    "symbols": ["VENBTC","TRXBTC","SALTBTC","IOSTBTC","DNTBTC","ONTBTC","TRIGBTC"],
     "default": {
       "bag": {
           "quantity": null,
@@ -68,8 +68,8 @@ module.exports = {
           },
           "sell": {
             "enabled": true,
-            "minCost": 0.002,
-            "trail": 0.0002,
+            "minCost": 0.0001,
+            "trail": 0.0003,
             "gain": {
                 "enabled": true,
                 "target": 1.015
