@@ -25,7 +25,7 @@ export class Binance implements IExchange {
         this._binanceWS = new binance.BinanceWS(true);
     }
     start(): void {
-        var symbols = this. .symbols;
+        var symbols = this._config.symbols;
         var portfolio = wait.for.promise(this._getPortfolio(symbols));
         _.each(symbols, (symbol:string) => {
             this._assets[symbol] = new Asset(symbol, this._config[symbol]);
