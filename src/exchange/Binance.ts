@@ -25,7 +25,7 @@ export class Binance implements IExchange {
         this._binanceWS = new binance.BinanceWS(true);
     }
     start(): void {
-        var symbols = this._config.symbols;
+        var symbols = this. .symbols;
         var portfolio = wait.for.promise(this._getPortfolio(symbols));
         _.each(symbols, (symbol:string) => {
             this._assets[symbol] = new Asset(symbol, this._config[symbol]);
@@ -121,7 +121,6 @@ export class Binance implements IExchange {
 				if(err) {
 					log.debug(err);
 				} else {
-                    console.log(data.balances); process.exit();
                     var balances = _.filter(data.balances, (b:any) => { return symbols.indexOf(b.asset + this._config.quote) > -1 }); // TODO: should be allowed to use Array.includes()
 					_.each(balances, (b:any) => {
 						if(b.asset == this._config.quote) return true; // skip quote currency
