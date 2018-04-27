@@ -1,19 +1,41 @@
 # binance-trader
-This is still work-in-progress
+This is a trading bot that triggers buy and sell orders based on price and technical indicator triggers set by the user.
+
+_While the author(s) of this trading bot is using this application to automate trades, this application will not guarantee profits. Please use this application at your own risk._
+
+# Crypto Exchange
+Currently only Binance is supported.
 
 # Installation
-npm install
-create .env file with api key and secret
-configure settings in config/default.json file
-heroku local:run node app
+## Core Requirements
+* NodeJS
+* TypeScript
+* npm
+
+## Production
+This application is designed to run on heroku.
+
+* Set up environment variables on Heroku
+ * audit - values allowed: "trace", "debug", "warn", "info"
+ * key - the Binance API key
+ * secret - the Binance API secret key
+ * NODE_ENV - "heroku"
+* Then simply push to Heroku and it should automatically run npm install.
+
+## Development or running locally
+Instead of environment variables, the values are defined in src/config/secret.json. Simply replace the values to your own.
+To build, run: npm run build
+
+## Testing
+No tests at the moment. (Yes, very bad. You are warned!)
 
 # Organisation
-* app.js - entry point of application
-* binance.js - provides exchange data and functionality
-* trader.js - takes care of the act of trading by taking data from exchange and applying calculations to make trade decisions
-* symbol.js - data structure to hold state and config of traded symbol
+* app.ts - entry point of application
+* binance.ts - provides exchange data and functionality
+* trader.ts - takes care of the act of trading by taking data from exchange and applying calculations to make trade decisions
+* symbol.ts - data structure to hold state and config of traded symbol
 * config/default.json - user settings for running the bot
-* configurator.js - prepares the config for each symbol based on user settings
+* configurator.ts - prepares the config for each symbol based on user settings
 
 # Configuration
 ## Buying Strategies
