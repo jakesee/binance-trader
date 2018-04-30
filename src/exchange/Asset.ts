@@ -1,3 +1,4 @@
+import * as log from 'loglevel';
 import * as _ from "lodash";
 import {IAsset, ITrade, POSITION, ISettings} from "./IExchange";
 
@@ -54,10 +55,16 @@ export class Asset implements IAsset
     }
     public setSettings(settings:ISettings, quantity:number, cost:number):void {
         this._settings = settings;
-		if(this._settings.bag.quantity == null) this._settings.bag.quantity = quantity;
-		if(this._settings.bag.cost == null) this._settings.bag.cost = cost;
-		this._settings.bag.quantity = Math.min(this._settings.bag.quantity, quantity);
-		if(this._settings.bag.cost > 0) this.initDCA();
+
+        // if user did not specify bag properties, the use the value from exchange account
+        this._settings.bag.quantity = this._settings.bag.quantity || quantity;
+        this._settings.bag.cost = this._settings.bag.cost || cost;
+
+        // if the user specified too much quantity, then use the quantity from exchange account
+        this._settings.bag.quantity = Math.min(this._settings.bag.quantity, quantity);
+
+        // then reset the DCA
+        this.resetDCA();
     }
     public setLastQueryTime(elapsedTime:number):void {
         this._lastTime = elapsedTime;
@@ -74,7 +81,7 @@ export class Asset implements IAsset
 			&& this._settings.bag.quantity != null
 			&& this._settings.bag.cost != null);
     }
-    public initDCA():void {
+    public resetDCA():void {
         // TODO: this function should be initSellMode, and should be called when trader sucessfully bought asset
         this._settings.bag.dca = _.cloneDeep(this._settings.strategy.dca);
     }
@@ -150,5 +157,37 @@ export class Asset implements IAsset
 				delete this._book.asks[price];
 			}
 		});
+    }
+
+    public updateUser(data:any) {
+        /* Update bag:
+            config.bag.quantity --- quantity available for trading
+            config.bag.cost --- weighted average cost of bag
+        */
+       log.info(data.side, data.orderId, data.executionType, data.lastTradeQuantity, data.lastTradePrice);
+       var side = data.side;
+       var price = Number(data.lastTradePrice);
+       var lastTradeQuantity = Number(data.lastTradeQuantity);
+       var bag = this._settings.bag;
+
+       var totalQty, totalCost;
+       if (side == 'BUY') {
+           totalQty = lastTradeQuantity + bag.quantity;
+           totalCost = (lastTradeQuantity * price) + (bag.quantity * bag.cost);
+           var weightedAveragePrice = totalCost / totalQty;
+           bag.cost = weightedAveragePrice;
+           bag.quantity = totalQty;
+       } else if (side == 'SELL') {
+           totalQty = bag.quantity - lastTradeQuantity;
+           totalCost = (bag.quantity * bag.cost) - (lastTradeQuantity * price);
+           if (totalQty <= 0) {
+               bag.cost = 0;
+               bag.quantity = 0;
+           } else {
+               var weightedAveragePrice = totalCost / totalQty;
+               bag.cost = weightedAveragePrice;
+               bag.quantity = totalQty;
+           }
+       }
     }
 }

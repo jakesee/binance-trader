@@ -34,7 +34,7 @@ export interface IAsset {
     setLastQueryTime(elaspseTime:number):void;
     isTimeToQuery(elapsedTime:number):boolean;
     isReady():boolean;
-    initDCA():void; // TODO: this should be initSellMode()
+    resetDCA():void; // TODO: this should be initSellMode()
     canBuy(quantity:number, price:number):boolean;
     shouldSell():boolean;
     clearOrder():void;

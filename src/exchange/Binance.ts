@@ -29,7 +29,6 @@ export class Binance implements IExchange {
         var portfolio = wait.for.promise(this._getPortfolio(symbols));
         _.each(symbols, (symbol:string) => {
             this._assets[symbol] = new Asset(symbol, this._config[symbol]);
-            console.log(portfolio);
             var quantity = Math.trunc(Number(portfolio[symbol].free));
 			var cost = Number(portfolio[symbol].weightedAveragePrice);
 			this._assets[symbol].setSettings(this._config[symbol], quantity, cost);
@@ -264,8 +263,9 @@ export class Binance implements IExchange {
     }
     private _loadUserDataStream() {
         this._binanceWS.onUserData(this._rest, (streamData:any) => {
+            let symbol = streamData.symbol;
             this._events.emit('user', streamData);
-            if (!(this._assets.hasOwnProperty(streamData.symbol))) return;
+            if (!(this._assets.hasOwnProperty(symbol))) return;
 
             if (streamData.eventType === 'outboundAccountInfo') {
                 // TODO: update account balances
@@ -275,52 +275,13 @@ export class Binance implements IExchange {
                 } else if (streamData.executionType == 'NEW') {
                     this._events.emit('NEW', streamData);
                 } else if (streamData.executionType == 'TRADE' && streamData.orderStatus == 'PARTIALLY_FILLED') {
-                    this._onUDSTradePartiallyFilled(streamData);
+                    this._assets[symbol].updateUser(streamData);
+                    this._events.emit('PARTIALLY_FILLED', streamData);
                 } else if (streamData.executionType == 'TRADE' && streamData.orderStatus == 'FILLED') {
-                    this._onUDSTradeFilled(streamData);
+                    this._assets[symbol].updateUser(streamData);
+                    this._events.emit('FILLED', streamData);
                 }
             }
         });
-    }
-    private _onUDSTradePartiallyFilled(data:any) {
-        this._onUDSTrade(data);
-        this._events.emit('PARTIALLY_FILLED', data);
-    }
-    private _onUDSTradeFilled(data:any) {
-        this._onUDSTrade(data);
-        this._events.emit('FILLED', data);
-    }
-    private _onUDSTrade(data:any) {
-        /* Update bag:
-            config.bag.quantity --- quantity available for trading
-            config.bag.cost --- weighted average cost of bag
-            TODO: this is actually not a good design, the individual asset should update the bag themselves
-        */
-        log.info(data.side, data.orderId, data.executionType, data.lastTradeQuantity, data.lastTradePrice);
-        var symbol = data.symbol;
-        var side = data.side;
-        var price = Number(data.lastTradePrice);
-        var lastTradeQuantity = Number(data.lastTradeQuantity);
-        var bag = this._assets[data.symbol].getSettings().bag;
-        let totalQty;
-
-        if (side == 'BUY') {
-            totalQty = lastTradeQuantity + bag.quantity;
-            var totalCost = (lastTradeQuantity * price) + (bag.quantity * bag.cost);
-            var weightedAveragePrice = totalCost / totalQty;
-            bag.cost = weightedAveragePrice;
-            bag.quantity = totalQty;
-        } else if (side == 'SELL') {
-            totalQty = bag.quantity - lastTradeQuantity;
-            var totalCost = (bag.quantity * bag.cost) - (lastTradeQuantity * price);
-            if (totalQty <= 0) {
-                bag.cost = 0;
-                bag.quantity = 0;
-            } else {
-                var weightedAveragePrice = totalCost / totalQty;
-                bag.cost = weightedAveragePrice;
-                bag.quantity = totalQty;
-            }
-        }
     }
 }

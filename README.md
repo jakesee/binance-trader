@@ -49,5 +49,8 @@ No tests at the moment. (Yes, very bad. You are warned!)
 ## Selling Strategy
 * percentage gain
 
+# Dollar Cost Averaging (DCA)
+When in selling mode, and the price is falling, the bot can be set to buy more coins at each DCA percentage level to lower the overall costs. If user buys more coins manually, an event will be triggered to update the coin quantity and cost, and the next DCA price level will be calculated at the new cost.
+
 # Warning
 Bot will sell everything in your bag that are not locked in any open orders.
