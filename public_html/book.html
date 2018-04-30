@@ -18,6 +18,7 @@
 				</ul>
 				<div id="{{symbol}}-plot"></div>
 				<div id="{{symbol}}-plot-bids"></div>
+				<div id="{{symbol}}-plot-bids-sentiment"></div>
 			</div>
 		</div>
 	</div>
@@ -56,7 +57,6 @@ app.controller('dashboard', ($scope) => {
 	});
 
 	socket.on('depth', (data) => {
-		console.log(data.symbol, data.bidsQty);
 		// $scope.demand.push((data.demand.volume - data.supply.volume) / data.price);
 		// if($scope.demand.length > 2000) $scope.demand.shift();
 		// var plot = [
@@ -75,6 +75,8 @@ app.controller('dashboard', ($scope) => {
 		$scope.chart[data.symbol].mid.push((data.low + data.high) / 2);
 		$scope.chart[data.symbol].bidsQty = data.bidsQty;
 		$scope.chart[data.symbol].bidsPrice = data.bidsPrice;
+		// $scope.chart[data.symbol].sbidsQty = data.sbidsQty;
+		// $scope.chart[data.symbol].sbidsPrice = data.sbidsPrice;
 		if($scope.chart[data.symbol].price.length > 2000) $scope.chart[data.symbol].price.shift();
 		if($scope.chart[data.symbol].resistance.length > 2000) $scope.chart[data.symbol].resistance.shift();
 		if($scope.chart[data.symbol].support.length > 2000) $scope.chart[data.symbol].support.shift();
@@ -90,15 +92,20 @@ app.controller('dashboard', ($scope) => {
 			{ type: 'scatter', y: $scope.chart[data.symbol].low, name: 'low' },
 			{ type: 'scatter', y: $scope.chart[data.symbol].mid, name: 'mid' },
 		];
-		var layout = {
-			title: data.symbol + ' Resistance and Support Prices',
-		}
+		var layout = { title: data.symbol + ' support and resistance prices' }
 		Plotly.newPlot(data.symbol + '-plot', plot, layout);
 
+		var layout = { title: data.symbol + ' ±10% price sentiments' }
 		plot = [
 			{ type: 'bar', y: $scope.chart[data.symbol].bidsQty, x: $scope.chart[data.symbol].bidsPrice }
 		]
 		Plotly.newPlot(data.symbol + '-plot-bids', plot, layout);
+
+		// var layout = { title: data.symbol + ' ±10% bid sentiments (80th percentile)' }
+		// plot = [
+		// 	{ type: 'bar', y: $scope.chart[data.symbol].sbidsQty, x: $scope.chart[data.symbol].sbidsPrice }
+		// ]
+		// Plotly.newPlot(data.symbol + '-plot-bids-sentiment', plot, layout);
 	});
 
 	// $scope.delta = [];

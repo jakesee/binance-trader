@@ -4,6 +4,9 @@ import { Bootstrap } from "./Bootstrap";
 // utility
 import * as _ from 'lodash';
 import * as tick from 'animation-loops';
+import * as faststats from "fast-stats";
+var fstats = faststats.Stats;
+
 // networking
 import * as express from 'express';
 import * as http from 'http';
@@ -40,8 +43,28 @@ class App {
             if(!symbol.isReady()) return;
         
             // calculate the average 
-            var bids = _.take(book.bids, 40);
-            var asks = _.take(book.asks, 40);
+            // var bids = _.take(book.bids, 40);
+            // var asks = _.take(book.asks, 40);
+            // var bids = _.take(book.bids, 40);
+            // var asks = _.take(book.asks, 40);
+            var lowerBound = symbol.getTrade().price / 1.1;
+            var upperBound = symbol.getTrade().price * 1.1;
+            var bids = _.filter(book.bids, (bid:IOrder) => { return bid.price >= lowerBound });
+            var asks = _.filter(book.asks, (ask:IOrder) => { return ask.price <= upperBound });
+
+            // bid sentiment
+            var fsBids = new fstats().push(_.map(bids, (bid:IOrder) => { return +bid.quantity }));
+            var phighBids = fsBids.percentile(85);
+            var plowbids = fsBids.percentile(5);
+            var sentimentBids = _.filter(bids, (bid:IOrder) => { return plowbids < bid.quantity  && bid.quantity < phighBids }) ;
+
+            // ask sentiment
+            var fsAsks = new fstats().push(_.map(asks, (ask:IOrder) => { return +ask.quantity }));
+            var phighAsks = fsAsks.percentile(85);
+            var plowAsks = fsAsks.percentile(5);
+            var sentimentAsks = _.filter(asks, (ask:IOrder) => { return plowAsks < ask.quantity  && ask.quantity < phighAsks }) ;
+
+
             // var orders40 = [].concat(bids).concat(asks);
             // var price = 0;
             // var count = 0;
@@ -89,8 +112,10 @@ class App {
                 price: symbol.getTrade().price,
                 low: low,
                 high: high,
-                bidsQty: _.map(book.bids, (bid:IOrder) => { return bid.quantity }),
-                bidsPrice: _.map(book.bids, (bid:IOrder) => { return bid.price })
+                bidsQty: _.map(sentimentBids, (bid:IOrder) => { return bid.quantity }).concat(_.map(sentimentAsks, (ask:IOrder) => { return -ask.quantity })),
+                bidsPrice: _.map(sentimentBids, (bid:IOrder) => { return bid.price }).concat(_.map(sentimentAsks, (ask:IOrder) => { return ask.price })),
+                // sbidsQty: _.map(sentimentBids, (bid:IOrder) => { return -bid.quantity }),
+                // sbidsPrice: _.map(sentimentBids, (bid:IOrder) => { return bid.price }),
             });
         });
     }
