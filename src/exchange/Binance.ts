@@ -265,7 +265,13 @@ export class Binance implements IExchange {
         this._binanceWS.onUserData(this._rest, (streamData:any) => {
             let symbol = streamData.symbol;
             this._events.emit('user', streamData);
+<<<<<<< HEAD
             if (!(this._assets.hasOwnProperty(symbol))) return;
+=======
+
+            // if the symbol is not configured for trading, then we ignore it.
+            if (!(this._assets.hasOwnProperty(streamData.symbol))) return;
+>>>>>>> master
 
             if (streamData.eventType === 'outboundAccountInfo') {
                 // TODO: update account balances
