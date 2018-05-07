@@ -3,7 +3,7 @@ import * as _ from 'lodash';
 import * as wait from 'wait-for-stuff';
 import * as EventEmitter from "events";
 
-import { IExchange, IAsset } from "./IExchange";
+import { IExchange, IAsset, IAssetInfo, IBalance } from "./IExchange";
 import { Asset } from "./Asset";
 import * as binance from 'binance';
 
@@ -26,15 +26,9 @@ export class Binance implements IExchange {
     }
     start(): void {
         var symbols = this._config.symbols;
-        var portfolio = wait.for.promise(this._getPortfolio(symbols));
-        _.each(symbols, (symbol:string) => {
-            this._assets[symbol] = new Asset(symbol, this._config[symbol]);
-            var quantity = Math.trunc(Number(portfolio[symbol].free));
-			var cost = Number(portfolio[symbol].weightedAveragePrice);
-			this._assets[symbol].setSettings(this._config[symbol], quantity, cost);
-			
-            log.info(this._assets[symbol].getSymbol(), this._assets[symbol].getSettings().bag.quantity, this._assets[symbol].getSettings().bag.cost, this._assets[symbol].getSettings().bag.position);
-        });
+
+        // load asset data structures
+        this._loadAssets(symbols);
 
         // setup real-time streams
         this._loadTickerStream(symbols); // collect latest price data from websocket
@@ -109,6 +103,46 @@ export class Binance implements IExchange {
                     reject(null);
                 } else {
                     resolve(data);
+                }
+            });
+        });
+    }
+    private _loadAssets(symbols:Array<string>) {
+        var assetInfo:{[key:string]:IAssetInfo} = wait.for.promise(this._getAssetInfo(symbols));
+        var portfolio:{[key:string]:IBalance} = wait.for.promise(this._getPortfolio(symbols));
+        _.each(symbols, (symbol:string) => {
+            this._assets[symbol] = new Asset(symbol, this._config[symbol], portfolio[symbol], assetInfo[symbol]);
+            var asset = this._assets[symbol];
+            log.info(asset.getSymbol(), asset.getSettings().bag.quantity, asset.getSettings().bag.cost, asset.getSettings().bag.position);
+        });
+    }
+    private _getAssetInfo(symbols:Array<string>) {
+        return new Promise((resolve, reject) => {
+            this._rest.exchangeInfo((err:any, data:any) => {
+                if(err) {
+                    log.debug(err);
+                    reject();
+                } else {
+                    var assetInfo:{[key:string]:IAssetInfo} = {};
+                    _.each(data.symbols, (asset:any) => {
+                        if(symbols.indexOf(asset.symbol) > -1) {
+                            assetInfo[asset.symbol] = asset;
+                            let filters:{[key:string]:any} = {};
+                            _.each(asset.filters, (filter:any) => {
+                                filters[filter.filterType] = filter;
+                            });
+                            assetInfo[asset.symbol] = {
+                                    minPrice: +filters['PRICE_FILTER'].minPrice,
+                                    maxPrice: +filters['PRICE_FILTER'].maxPrice,
+                                    tickSize: +filters['PRICE_FILTER'].tickSize,
+                                    minQty: +filters['LOT_SIZE'].minQty,
+                                    maxQty: +filters['LOT_SIZE'].maxQty,
+                                    stepQty: +filters['LOT_SIZE'].stepSize,
+                                    minQuotePrice: +filters['MIN_NOTIONAL'].minNotional,
+                            }
+                        }
+                    });
+                    resolve(assetInfo);
                 }
             });
         });

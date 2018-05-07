@@ -30,7 +30,7 @@ export interface IAsset {
     getTicker():ITicker;
     getOrderBook():IOrderBook;
     getSettings():ISettings;
-    setSettings(settings:ISettings, quantity:number, cost:number):void
+    getInfo():IAssetInfo;
     setLastQueryTime(elaspseTime:number):void;
     isTimeToQuery(elapsedTime:number):boolean;
     isReady():boolean;
@@ -38,6 +38,22 @@ export interface IAsset {
     canBuy(quantity:number, price:number):boolean;
     shouldSell():boolean;
     clearOrder():void;
+}
+
+export interface IBalance {
+    free:number;
+    locked:number;
+    weightedAveragePrice:number;
+}
+
+export interface IAssetInfo {
+    minPrice:number;
+    maxPrice:number;
+    tickSize:number;
+    minQty:number;
+    maxQty:number;
+    stepQty:number;
+    minQuotePrice:number;
 }
 
 export interface IOrder {
