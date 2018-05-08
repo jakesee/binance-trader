@@ -68,6 +68,7 @@ module.exports = {
           },
           "sell": {
             "enabled": true,
+            "minCost": 0.0001,
             "trail": 0.0015,
             "gain": {
                 "enabled": true,
