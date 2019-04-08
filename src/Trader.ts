@@ -201,7 +201,7 @@ export class Trader {
 		var cost = asset.getSettings().bag.cost;
 		var quantity = asset.getSettings().bag.quantity;
 
-		if(shouldSell && (quantity < asset.getInfo().minQty)) {
+		if(shouldSell && (quantity * cost < sellStrategy.minCost)) {
 			shouldSell = false;
 		}
 

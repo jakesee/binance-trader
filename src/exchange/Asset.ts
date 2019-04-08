@@ -1,6 +1,6 @@
 import * as log from 'loglevel';
 import * as _ from "lodash";
-import {IAsset, ITrade, POSITION, ISettings, IBalance, IAssetInfo} from "./IExchange";
+import {IAsset, ITrade, POSITION, ISettings} from "./IExchange";
 
 export class Asset implements IAsset
 {
@@ -15,25 +15,8 @@ export class Asset implements IAsset
     private _book:{[key:string]:any} = {};
     private _bookBuffer:object[] = Array();
 
-    constructor(private _symbol:string, private _settings:ISettings, balance:IBalance, private _info:IAssetInfo) {
-        // fix missing or invalid settings:
-        // -----------------------------------
-        // if user did not specify bag properties, the use the value from exchange account
-        var quantity = Math.trunc(Number(balance.free));
-        var cost = Number(balance.weightedAveragePrice);
-        this._settings.bag.quantity = this._settings.bag.quantity || quantity;
-        this._settings.bag.cost = this._settings.bag.cost || cost;
-        // if minCost not specified, then use the asset info defined by exchange
-        this._settings.strategy.buy.minCost = this._settings.strategy.buy.minCost || this._info.minQuotePrice;
-        this._settings.strategy.buy.minCost = Math.max(this._info.minQuotePrice, this._settings.strategy.buy.minCost);
-        // if the user specified too much quantity, then use the quantity from exchange account
-        this._settings.bag.quantity = Math.min(this._settings.bag.quantity, quantity);
-
-        // then reset the DCA
-        this.resetDCA();
-
-        // set a random delay so that query time don't collide all together
-        this._lastTime = Math.random() * this._settings.frequency;           
+    constructor(private _symbol:string, private _settings:ISettings) {
+        
     }
     public getSymbol() {
         return this._symbol;
@@ -70,8 +53,18 @@ export class Asset implements IAsset
     public getSettings():ISettings {
         return this._settings;
     }
-    public getInfo():IAssetInfo {
-        return this._info;
+    public setSettings(settings:ISettings, quantity:number, cost:number):void {
+        this._settings = settings;
+
+        // if user did not specify bag properties, the use the value from exchange account
+        this._settings.bag.quantity = this._settings.bag.quantity || quantity;
+        this._settings.bag.cost = this._settings.bag.cost || cost;
+
+        // if the user specified too much quantity, then use the quantity from exchange account
+        this._settings.bag.quantity = Math.min(this._settings.bag.quantity, quantity);
+
+        // then reset the DCA
+        this.resetDCA();
     }
     public setLastQueryTime(elapsedTime:number):void {
         this._lastTime = elapsedTime;
