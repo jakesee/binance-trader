@@ -2,7 +2,7 @@ module.exports = {
     "logLevel": "debug",
     "exchange": "binance",
     "quote": "BTC",
-    "symbols": ["SALTBTC","TRXBTC","DNTBTC","PPTBTC","IOSTBTC","STORMBTC","ICXBTC","XVGBTC","ARNBTC",],
+    "symbols": ["TRXBTC","STORMBTC","IOSTBTC","BCNBTC","XVGBTC","ONTBTC","ICXBTC","ARNBTC","NCASHBTC"],
     "default": {
       "bag": {
           "quantity": null,
@@ -33,7 +33,7 @@ module.exports = {
       "strategy": {
           "buy": {
             "enabled": false,
-            "minCost": 0.002,
+            //"minCost": 0.002,
             "maxCost": 0.005,
             "maxBuySpread": 0.02,
             "trail": 0.003,
