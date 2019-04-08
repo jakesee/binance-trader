@@ -6,6 +6,7 @@ import * as EventEmitter from "events";
 import { IExchange, IAsset, IAssetInfo, IBalance } from "./IExchange";
 import { Asset } from "./Asset";
 import * as binance from 'binance';
+import { exists } from 'fs';
 
 export class Binance implements IExchange {
 
@@ -21,6 +22,7 @@ export class Binance implements IExchange {
             timeout: 15000,
             recvWindow: 10000,
             disableBeautification: false,
+            handleDrift: true
         });
         this._binanceWS = new binance.BinanceWS(true);
     }
@@ -199,7 +201,7 @@ export class Binance implements IExchange {
             // NOTE: 
             /*
                 binance API this._rest.klines returns results in array index 0 to max 499, from oldest to newest candle
-                technicalindicator macdInput also takes values from olderst to newest (close price), index 0 to max.
+                technicalindicator macdInput also takes values from oldest to newest (close price), index 0 to max.
             */
             this._rest.klines({
                 symbol: symbol,

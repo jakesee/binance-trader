@@ -1,8 +1,8 @@
 module.exports = {
     "logLevel": "debug",
     "exchange": "binance",
-    "quote": "BTC",
-    "symbols": ["SALTBTC","TRXBTC","DNTBTC","PPTBTC","IOSTBTC","STORMBTC","ICXBTC","XVGBTC","ARNBTC",],
+    "quote": "USDT",
+    "symbols": ["LTCUSDT"],
     "default": {
       "bag": {
           "quantity": null,
@@ -43,7 +43,7 @@ module.exports = {
                 "trigger": -0.003
             },
             "macd": {
-                "enabled": false,
+                "enabled": true,
                 "trigger": -0.003
             },
             "rsi": {
@@ -67,11 +67,11 @@ module.exports = {
             }
           },
           "sell": {
-            "enabled": false,
+            "enabled": true,
             "trail": 0.0015,
             "gain": {
                 "enabled": true,
-                "target": 1.015
+                "target": 1.05
             }
           },
           "dca": {

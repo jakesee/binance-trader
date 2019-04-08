@@ -18,35 +18,35 @@ export class Trader {
     }
 
     public start() {
-        var handle = tick.add((elapsed:number, delta:number, stop:()=>void) => {
-            var assets = this._exchange.getAssets();
+			var handle = tick.add((elapsed:number, delta:number, stop:()=>void) => {
+				var assets = this._exchange.getAssets();
 
-			_.forOwn(assets, (asset:IAsset, key:string) => {
+				_.forOwn(assets, (asset:IAsset, key:string) => {
 
-                if(!asset.isTimeToQuery(elapsed)) return;
-				asset.setLastQueryTime(elapsed);
+					if(!asset.isTimeToQuery(elapsed)) return;
+					asset.setLastQueryTime(elapsed);
 
-				var price = Number(asset.getTrade().price);
-				var position = asset.getSettings().bag.position;
-				var quantity = asset.getSettings().bag.quantity;
+					var price = Number(asset.getTrade().price);
+					var position = asset.getSettings().bag.position;
+					var quantity = asset.getSettings().bag.quantity;
 
-				if(position == POSITION.BUYING) {
-					this._buying(asset, price); // trailing buy, buying the lowest possible
-				} else if(position == POSITION.BIDDING) {
-					this._bidding(asset, price); // bid placed, waiting for taker
-				} else if(position == POSITION.SELLING) {
-					this._selling(asset, price); // trailing sell if price goes up;
-				} else if(position == POSITION.ASKING) {
-					this._asking(asset, price); // asking price offered, waiting for taker
-				} else if(position == POSITION.SELL) {
-					this._sell(asset, price);
-				} else if (asset.shouldSell() && !this._sell(asset, price)) { // there are items in bag, need to sell off
-					this._dca(asset, price); // do technical analysis to see if good to buy	
-				} else {
-					this._buy(asset, price); // do technical analysis to see if good to buy
-				}
+					if(position == POSITION.BUYING) {
+						this._buying(asset, price); // trailing buy, buying the lowest possible
+					} else if(position == POSITION.BIDDING) {
+						this._bidding(asset, price); // bid placed, waiting for taker
+					} else if(position == POSITION.SELLING) {
+						this._selling(asset, price); // trailing sell if price goes up;
+					} else if(position == POSITION.ASKING) {
+						this._asking(asset, price); // asking price offered, waiting for taker
+					} else if(position == POSITION.SELL) {
+						this._sell(asset, price);
+					} else if (asset.shouldSell() && !this._sell(asset, price)) { // there are items in bag, need to sell off
+						this._dca(asset, price); // do technical analysis to see if good to buy	
+					} else {
+						this._buy(asset, price); // do technical analysis to see if good to buy
+					}
+				});
 			});
-        });
     }
     private _buy(asset:IAsset, price:number) {
 
@@ -172,7 +172,7 @@ export class Trader {
 			bag.position = POSITION.BUY;
 		}
 	}
-    private _bidding(asset:IAsset, price:number) {
+	private _bidding(asset:IAsset, price:number) {
 		var bag = asset.getSettings().bag;
 		var order = bag.order;
 		if(order != null && bag.position == POSITION.BIDDING) {
@@ -189,7 +189,7 @@ export class Trader {
 			}
 		}
 	}
-    private _sell(asset:IAsset, price:number):boolean {
+  private _sell(asset:IAsset, price:number):boolean {
 
 		var sellStrategy = asset.getSettings().strategy.sell;
 		if(sellStrategy.enabled === false) {
@@ -221,8 +221,8 @@ export class Trader {
 		}
 
 		return shouldSell;
-    }
-    private _selling(asset:IAsset, price:number) {
+	}
+	private _selling(asset:IAsset, price:number) {
 		var bag = asset.getSettings().bag;
 		bag.ask = Number(asset.getTradeHighest().price);
 		log.debug(asset.getSymbol(), 'selling', bag.ask, bag.ask - (bag.ask * asset.getSettings().strategy.sell.trail));
@@ -250,7 +250,7 @@ export class Trader {
 			bag.position = POSITION.SELL;
 		}
 	}
-    private _asking(asset:IAsset, price:number) {
+  private _asking(asset:IAsset, price:number) {
 		var bag = asset.getSettings().bag;
 		var order = bag.order;
 		if(order != null && bag.position == POSITION.ASKING) {
@@ -266,8 +266,8 @@ export class Trader {
 				}
 			}
 		}
-    }
-    private _dca(asset:IAsset, price:number) {
+	}
+	private _dca(asset:IAsset, price:number) {
 		var bag = asset.getSettings().bag;
 
 		if(bag.dca.enabled === false || bag.dca.levels.length == 0) {
@@ -285,7 +285,7 @@ export class Trader {
 			}
 		}
 	}
-    private _onFilledOrder(data:any) {
+  private _onFilledOrder(data:any) {
 		log.info('bag', data.executionType, data.orderId);
 		var asset = this._exchange.getAssets()[data.symbol];
 		var settings = asset.getSettings();
@@ -307,9 +307,9 @@ export class Trader {
 			asset.clearOrder();
 			log.info('bag', data.executionType, data.orderId, asset.getSettings().bag.quantity, asset.getSettings().bag.cost);
 		} // otherwise, it is some other order we don't have to care about.
-    }
-    
-    private _getTechnicalAnalysis(asset:IAsset) {
+	}
+	
+	private _getTechnicalAnalysis(asset:IAsset) {
 		var macd = null; var bb = null; var rsi = null;
 		var emafast = null; var emaslow = null;
 		var indicator = asset.getSettings().indicator;
