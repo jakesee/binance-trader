@@ -83,6 +83,7 @@ export class Trader {
 			log.debug("MACD not implemented yet");
 		}
 		if(shouldBuy && buyStrategy.rsi.enabled === true) {
+			log.debug("rsi", tech.rsi[0]);
 			if(tech.rsi[0] > buyStrategy.rsi.trigger)
 				shouldBuy = false;
 		}
@@ -99,7 +100,7 @@ export class Trader {
 		}
 		if(shouldBuy && buyStrategy.emaspread.enabled === true) {
 			var level = (tech.emafast / tech.emaslow) - 1;
-			log.debug("emaspread", level);
+			log.debug("emaspread", level, "fast:", tech.emafast, "slow:", tech.emaslow);
 			// to buy, if trigger is negative, then price must be lower than trigger
 			// to buy, if trigger is positive, then price must be higher than trigger
 			if((buyStrategy.emaspread.trigger < 0 && level > buyStrategy.emaspread.trigger)
@@ -117,6 +118,7 @@ export class Trader {
 		}
 		if(shouldBuy && buyStrategy.emaslow.enabled === true) {
 			var level = (price / tech.emaslow) -1;
+			log.debug("emaslow", level);
 			if((buyStrategy.emaslow.trigger < 0 && level > buyStrategy.emaslow.trigger)
 				|| (buyStrategy.emaslow.trigger > 0 && level < buyStrategy.emaslow.trigger)) {
 				shouldBuy = false;
@@ -132,8 +134,8 @@ export class Trader {
 			log.debug(asset.getSettings().bag);
 			asset.resetDCA(); // TODO: this should be called when trader successfully buy asset
 		}
-    }
-    private _buying(asset:IAsset, price:number) {
+	}
+	private _buying(asset:IAsset, price:number) {
 		var bag = asset.getSettings().bag;
 		bag.bid = Number(asset.getTradeLowest().price); // update lowest price
 		var stop = bag.bid + (bag.bid * asset.getSettings().strategy.buy.trail);
