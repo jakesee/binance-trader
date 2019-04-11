@@ -71,7 +71,7 @@ module.exports = {
           "trail": 0.0015,
           "gain": {
               "enabled": true,
-              "target": 1.015
+              "target": 1.025
           }
         },
         "dca": {
