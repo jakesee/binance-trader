@@ -36,7 +36,7 @@ module.exports = {
           "minCost": 100,
           "maxCost": 150,
           "maxBuySpread": 0.02,
-          "trail": 0.003,
+          "trail": 0.0015,
           "bb": {
               "enabled": false,
               "reference": "lowbb",
@@ -60,7 +60,7 @@ module.exports = {
           },
           "emaslow": {
               "enabled": true,
-              "trigger": -0.025
+              "trigger": -0.016
           },
           "loss": {
               "trigger": -7
@@ -71,7 +71,7 @@ module.exports = {
           "trail": 0.0015,
           "gain": {
               "enabled": true,
-              "target": 1.025
+              "target": 1.016
           }
         },
         "dca": {
