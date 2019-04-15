@@ -33,7 +33,7 @@ module.exports = {
     "strategy": {
         "buy": {
           "enabled": true,
-          "minCost": 100,
+          "minCost": 50,
           "maxCost": 150,
           "maxBuySpread": 0.02,
           "trail": 0.0015,
@@ -75,7 +75,7 @@ module.exports = {
           }
         },
         "dca": {
-          "enabled": false,
+          "enabled": true,
           "levels": [-0.035, -0.045, -0.045, -0.045, -0.055, -0.055]
         }
    
@@ -85,7 +85,7 @@ module.exports = {
     "strategy": {
         "buy": {
           "enabled": true,
-          "minCost": 100,
+          "minCost": 50,
           "maxCost": 150,
           "maxBuySpread": 0.02,
           "trail": 0.0007,
@@ -111,7 +111,7 @@ module.exports = {
         },
         "dca": {
           "enabled": true,
-          "levels": [-0.008, -0.012, -0.016, -0.035, -0.045, -0.055]
+          "levels": [-0.035, -0.045, -0.045, -0.045, -0.055, -0.055]
         }
     }
   }
