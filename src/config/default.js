@@ -78,6 +78,41 @@ module.exports = {
           "enabled": false,
           "levels": [-0.035, -0.045, -0.045, -0.045, -0.055, -0.055]
         }
+   
+      }
+  },
+  "LTCUSDT": {
+    "strategy": {
+        "buy": {
+          "enabled": true,
+          "minCost": 100,
+          "maxCost": 150,
+          "maxBuySpread": 0.02,
+          "trail": 0.0007,
+          "rsi": {
+              "enabled": true,
+              "trigger": 34
+          },
+          "emaslow": {
+              "enabled": true,
+              "trigger": -0.008
+          },
+          "loss": {
+              "trigger": -7
+          }
+        },
+        "sell": {
+          "enabled": true,
+          "trail": 0.0007,
+          "gain": {
+              "enabled": true,
+              "target": 1.016
+          }
+        },
+        "dca": {
+          "enabled": true,
+          "levels": [-0.008, -0.012, -0.016, -0.035, -0.045, -0.055]
+        }
     }
   }
 }

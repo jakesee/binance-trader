@@ -16,6 +16,7 @@ export class Bootstrap {
 
     constructor() {
         this._load();
+        log.info('final config', this._config);
     }
     public getConfig():{[key:string]:any} {
         return this._config;
