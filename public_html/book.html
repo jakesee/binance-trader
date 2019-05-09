@@ -72,7 +72,7 @@ app.controller('dashboard', ($scope) => {
 		$scope.chart[data.symbol].support.push(data.demand.price);
 		$scope.chart[data.symbol].high.push(data.high);
 		$scope.chart[data.symbol].low.push(data.low);
-		$scope.chart[data.symbol].mid.push((data.low + data.high) / 2);
+		$scope.chart[data.symbol].mid.push((data.supply.price + data.demand.price) / 2);
 		$scope.chart[data.symbol].bidsQty = data.bidsQty;
 		$scope.chart[data.symbol].bidsPrice = data.bidsPrice;
 		// $scope.chart[data.symbol].sbidsQty = data.sbidsQty;

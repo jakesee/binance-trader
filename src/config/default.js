@@ -2,7 +2,7 @@ module.exports = {
   "logLevel": "debug",
   "exchange": "binance",
   "quote": "USDT",
-  "symbols": ["VETUSDT", "LTCUSDT"],
+  "symbols": ["VETUSDT", "LTCUSDT", "BTCUSDT"],
   "default": {
     "bag": {
         "quantity": null,

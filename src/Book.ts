@@ -32,6 +32,11 @@ class App {
             console.log('Listening on *:3001');        
         });
 
+        this._express.use(express.static('../public_html'));
+        // this._express.get('/book', (req:any, res:any) => {
+        //     res.sendFile('book.html');
+        // });
+
         this._io.on('connection', (socket:any) => {
             console.log('connected');
 	        socket.emit('symbol', _.map(this._exchange!.getAssets(), (a:IAsset) => {return a.getSymbol(); }));
@@ -47,8 +52,9 @@ class App {
             // var asks = _.take(book.asks, 40);
             // var bids = _.take(book.bids, 40);
             // var asks = _.take(book.asks, 40);
-            var lowerBound = symbol.getTrade().price / 1.1;
-            var upperBound = symbol.getTrade().price * 1.1;
+            var price = symbol.getTrade().price;
+            var lowerBound = price / 1.02;
+            var upperBound = price * 1.02;
             var bids = _.filter(book.bids, (bid:IOrder) => { return bid.price >= lowerBound });
             var asks = _.filter(book.asks, (ask:IOrder) => { return ask.price <= upperBound });
 
@@ -93,12 +99,12 @@ class App {
                 demand.quantity += Number(order.quantity);
                 demand.volume += Number(order.price) * Number(order.quantity);
             })
-            demand.price = demand.volume / demand.quantity;
+            demand.price = demand.volume / demand.quantity; // support
             _.each(asks, (order:IOrder) => {
                 supply.quantity += Number(order.quantity);
                 supply.volume += Number(order.price) * Number(order.quantity);
             });
-            supply.price = supply.volume / supply.quantity;
+            supply.price = supply.volume / supply.quantity; //resistance
         
         
             var high = this._getPrice(demand.quantity, book.asks);
@@ -109,7 +115,7 @@ class App {
                 symbol: data.symbol,
                 demand: demand,
                 supply: supply,
-                price: symbol.getTrade().price,
+                price: price,
                 low: low,
                 high: high,
                 bidsQty: _.map(sentimentBids, (bid:IOrder) => { return bid.quantity }).concat(_.map(sentimentAsks, (ask:IOrder) => { return -ask.quantity })),
@@ -117,17 +123,23 @@ class App {
                 // sbidsQty: _.map(sentimentBids, (bid:IOrder) => { return -bid.quantity }),
                 // sbidsPrice: _.map(sentimentBids, (bid:IOrder) => { return bid.price }),
             });
+
+            if(data.symbol == "BTCUSDT") console.log("%s UB:%d H:%d R:%d P:%d, S:%d L:%d LB:%d", data.symbol, upperBound.toFixed(2), high.toFixed(2), supply.price.toFixed(2), price, demand.price.toFixed(2), low.toFixed(2), lowerBound.toFixed(2));
         });
     }
 
-    private _getPrice(quantity:number, offers:IOrder[]) {
+    private _getPrice(quantity:number, offers:IOrder[]):number {
+        var price = offers[0].price;
         for(var i = 0; i < offers.length; i++) {
             let offer = offers[i];
             if(offer.quantity >= quantity) {
-                return offer.price;
+                price = offer.price;
+                break;
             }
             quantity -= offer.quantity;
         }
+
+        return price;
     }
 }
 
