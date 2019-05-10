@@ -126,7 +126,7 @@ export class Asset implements IAsset
 		});
     }
     public updateBook(book:{[key:string]:any}):void {
-        if(this._book == null) { // buffer the stream so that depth snapshot can be updated properly
+        if(_.isEmpty(this._book)) { // buffer the stream so that depth snapshot can be updated properly
 			this._bookBuffer.push(book);
 			return;
 		}
