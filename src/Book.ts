@@ -124,7 +124,7 @@ class App {
                 // sbidsPrice: _.map(sentimentBids, (bid:IOrder) => { return bid.price }),
             });
 
-            if(data.symbol == "BTCUSDT") console.log("%s UB:%d H:%d R:%d P:%d, S:%d L:%d LB:%d", data.symbol, upperBound.toFixed(2), high.toFixed(2), supply.price.toFixed(2), price, demand.price.toFixed(2), low.toFixed(2), lowerBound.toFixed(2));
+            if(data.symbol == "BTCUSDT") console.log("%s UB:%d H:%d R:%d P:%d S:%d L:%d LB:%d -- GS:%d GS:%d", data.symbol, upperBound.toFixed(2), high.toFixed(2), supply.price.toFixed(2), price, demand.price.toFixed(2), low.toFixed(2), lowerBound.toFixed(2), (high / price).toFixed(4), (supply.price / price).toFixed(4));
         });
     }
 

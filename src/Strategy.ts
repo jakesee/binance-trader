@@ -123,7 +123,7 @@ export class Strategy implements IStrategy {
 			console.log("spread", (ask / bid) - 1, asset.getSettings().strategy.buy.maxBuySpread);
 			if((ask / bid) - 1 < asset.getSettings().strategy.buy.maxBuySpread) { // prevent pump
 				var quantity = Math.ceil(asset.getSettings().strategy.buy.minCost / bid);
-				if(bag.quantity > 0) quantity = 2 * bag.quantity;
+				if(bag.quantity > 0) quantity = 2 * bag.quantity; // doing DCA
 				if(!asset.canBuy(quantity, bid)) {
 					bag.position = POSITION.SELL; // just concentrate on selling, the loss is too little
 					return;
