@@ -56,7 +56,7 @@ export class Asset implements IAsset
     public setSettings(settings:ISettings, quantity:number, cost:number):void {
         this._settings = settings;
 
-        // if user did not specify bag properties, the use the value from exchange account
+        // if user did not specify bag properties, then use the value from exchange account
         this._settings.bag.quantity = this._settings.bag.quantity || quantity;
         this._settings.bag.cost = this._settings.bag.cost || cost;
 
@@ -85,8 +85,8 @@ export class Asset implements IAsset
         // TODO: this function should be initSellMode, and should be called when trader sucessfully bought asset
         this._settings.bag.dca = _.cloneDeep(this._settings.strategy.dca);
     }
-    public canBuy(quantity:number, price:number):boolean {
-        return (quantity * price >= this._settings.strategy.buy.minCost);
+    public canBuy(quantity:number):boolean {
+        return (quantity >= this._settings.info.minQty && (quantity % this._settings.info.minQty == 0));
     }
     public shouldSell():boolean {
         return (this._settings.bag.quantity > 0 && this._settings.bag.cost > 0);

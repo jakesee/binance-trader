@@ -124,8 +124,8 @@ export class Strategy implements IStrategy {
 				var quantity = asset.getSettings().strategy.buy.minCost / bid;
 				if(bag.quantity > 0) quantity = 2 * bag.quantity; // if bag is not empty, it means we are doing DCA
 				quantity = (quantity < 1.0) ? (Math.ceil(quantity * 1000000) / 1000000) : Math.ceil(quantity); // round up the quantity
-				if(!asset.canBuy(quantity, bid)) { // TODO: This conditional is not required if we implement LOT LIMIT checks
-					bag.position = POSITION.SELL; // just concentrate on selling, the loss is too little
+				if(!asset.canBuy(quantity)) {
+					bag.position = POSITION.SELL; // can't buy, so just concentrate on selling
 					return;
 				}
 				var order = wait.for.promise(exchange.placeBuyLimit(asset.getSymbol(), quantity, bid));

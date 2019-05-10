@@ -35,7 +35,7 @@ export interface IAsset {
     isTimeToQuery(elapsedTime:number):boolean;
     isReady():boolean;
     resetDCA():void; // TODO: this should be initSellMode()
-    canBuy(quantity:number, price:number):boolean;
+    canBuy(quantity:number):boolean;
     shouldSell():boolean;
     clearOrder():void;
 }
@@ -81,7 +81,14 @@ export class IBag {
         enabled:boolean;
     } = { enabled: false, levels: [] };
 }
+export interface ISymbolInfo {
+    symbol:string,
+    minQty:number,
+    maxQty:number,
+    quotePrecision:number // number of decimal places of qoute price
+}
 export interface ISettings {
     bag:IBag;
+    info:ISymbolInfo;
     [key: string]:any;
 }

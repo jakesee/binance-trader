@@ -3,7 +3,7 @@ import * as _ from 'lodash';
 import * as wait from 'wait-for-stuff';
 import * as EventEmitter from "events";
 
-import { IExchange, IAsset } from "./IExchange";
+import { IExchange, IAsset, ISymbolInfo } from "./IExchange";
 import { Asset } from "./Asset";
 import * as binance from 'binance';
 import { exists } from 'fs';
@@ -14,6 +14,7 @@ export class Binance implements IExchange {
     private _assets:{[key:string]:Asset} = {}; // store the current state of the symbols
     private _rest:any;
     private _binanceWS:any;
+    private _symbolInfo:{[key:string]:ISymbolInfo} = {};
 
     constructor(private _config:{[key:string]:any}) {
         this._rest = new binance.BinanceRest({
@@ -26,10 +27,12 @@ export class Binance implements IExchange {
         });
         this._binanceWS = new binance.BinanceWS(true);
     }
-    start(): void {
+    public start(): void {
         var symbols = this._config.symbols;
+        var symbolInfo:{[key:string]:ISymbolInfo} = wait.for.promise(this._loadSymbolsInfo(symbols)); // cache the symbol info
         var portfolio = wait.for.promise(this._getPortfolio(symbols));
         _.each(symbols, (symbol:string) => {
+            this._config[symbol].info = symbolInfo[symbol];
             this._assets[symbol] = new Asset(symbol, this._config[symbol]);
             var quantity = Math.trunc(Number(portfolio[symbol].free));
 			var cost = Number(portfolio[symbol].weightedAveragePrice);
@@ -114,6 +117,28 @@ export class Binance implements IExchange {
                 }
             });
         });
+    }
+    private _loadSymbolsInfo(symbols:Array<string>) {
+        return new Promise((resolve, reject) => {
+            this._rest.exchangeInfo((err:any, data:any) => {
+                if(err) {
+                    log.debug(err);
+                    reject(err);
+                }
+                var symbol = _.filter(data.symbols, (Symbol:{symbol:string}) => _.indexOf(symbols, Symbol.symbol) >= 0)
+                var info:{[key:string]:ISymbolInfo} = {};
+                _.each(symbol, (s:any) => {
+                    var lotsize = _.find(s.filters, (f:any) => f.filterType == 'LOT_SIZE')
+                    info[s.symbol] = {
+                        symbol: s.symbol,
+                        minQty: Number(lotsize.minQty),
+                        maxQty: Number(lotsize.maxQty),
+                        quotePrecision: Number(s.quotePrecision)
+                    }
+                });
+                resolve(info);
+            });
+        })
     }
     private _getPortfolio(symbols:Array<string>) {
 		return new Promise((resolve, reject) => {
