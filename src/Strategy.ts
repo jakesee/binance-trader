@@ -120,12 +120,11 @@ export class Strategy implements IStrategy {
 			var book = asset.getOrderBook();
 			var bid = book.bids[0].price;
 			var ask = book.asks[0].price;
-			console.log("spread", (ask / bid) - 1, asset.getSettings().strategy.buy.maxBuySpread);
 			if((ask / bid) - 1 < asset.getSettings().strategy.buy.maxBuySpread) { // prevent pump
 				var quantity = asset.getSettings().strategy.buy.minCost / bid;
 				if(bag.quantity > 0) quantity = 2 * bag.quantity; // if bag is not empty, it means we are doing DCA
-				quantity = (quantity < 1.0) ? Number(quantity.toFixed(8)) : Math.ceil(quantity); // round the quantity
-				if(!asset.canBuy(quantity, bid)) {
+				quantity = (quantity < 1.0) ? (Math.ceil(quantity * 1000000) / 1000000) : Math.ceil(quantity); // round up the quantity
+				if(!asset.canBuy(quantity, bid)) { // TODO: This conditional is not required if we implement LOT LIMIT checks
 					bag.position = POSITION.SELL; // just concentrate on selling, the loss is too little
 					return;
 				}
