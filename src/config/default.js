@@ -2,7 +2,7 @@ module.exports = {
   "logLevel": "debug",
   "exchange": "binance",
   "quote": "USDT",
-  "symbols": ["VETUSDT", "LTCUSDT", "BTCUSDT"],
+  "symbols": ["VETUSDT", "LTCUSDT"],
   "default": {
     "bag": {
         "quantity": null,
@@ -33,10 +33,10 @@ module.exports = {
     "strategy": {
         "buy": {
           "enabled": true,
-          "minCost": 100,
+          "minCost": 50,
           "maxCost": 150,
           "maxBuySpread": 0.02,
-          "trail": 0.0015,
+          "trail": 0.0009,
           "bb": {
               "enabled": false,
               "reference": "lowbb",
@@ -51,8 +51,8 @@ module.exports = {
               "trigger": 34
           },
           "emaspread": {
-              "enabled": false,
-              "trigger": -0.003
+              "enabled": true,
+              "trigger": -0.004
           },
           "emafast": {
               "enabled": false,
@@ -75,8 +75,44 @@ module.exports = {
           }
         },
         "dca": {
-          "enabled": false,
-          "levels": [-0.035, -0.045, -0.045, -0.045, -0.055, -0.055]
+          "enabled": true,
+          "levels": [-0.045, -0.045, -0.045, -0.055, -0.055]
+        }
+   
+      }
+  },
+  "LTCUSDT": {
+    "strategy": {
+        "buy": {
+          "enabled": true,
+          "minCost": 50,
+          "maxCost": 150,
+          "maxBuySpread": 0.02,
+          "trail": 0.0007,
+          "rsi": {
+              "enabled": true,
+              "trigger": 34
+          },
+          "emaspread": {
+            "enabled": true,
+            "trigger": -0.003
+          },
+          "emaslow": {
+              "enabled": true,
+              "trigger": -0.010
+          }
+        },
+        "sell": {
+          "enabled": true,
+          "trail": 0.0007,
+          "gain": {
+              "enabled": true,
+              "target": 1.016
+          }
+        },
+        "dca": {
+          "enabled": true,
+          "levels": [-0.045, -0.045, -0.045, -0.055, -0.055]
         }
     }
   }
