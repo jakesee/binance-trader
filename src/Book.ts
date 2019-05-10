@@ -61,13 +61,13 @@ class App {
             // bid sentiment
             var fsBids = new fstats().push(_.map(bids, (bid:IOrder) => { return +bid.quantity }));
             var phighBids = fsBids.percentile(85);
-            var plowbids = fsBids.percentile(5);
+            var plowbids = fsBids.percentile(0);
             var sentimentBids = _.filter(bids, (bid:IOrder) => { return plowbids < bid.quantity  && bid.quantity < phighBids }) ;
 
             // ask sentiment
             var fsAsks = new fstats().push(_.map(asks, (ask:IOrder) => { return +ask.quantity }));
             var phighAsks = fsAsks.percentile(85);
-            var plowAsks = fsAsks.percentile(5);
+            var plowAsks = fsAsks.percentile(0);
             var sentimentAsks = _.filter(asks, (ask:IOrder) => { return plowAsks < ask.quantity  && ask.quantity < phighAsks }) ;
 
 
