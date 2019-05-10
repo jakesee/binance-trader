@@ -86,7 +86,7 @@ export class Asset implements IAsset
         this._settings.bag.dca = _.cloneDeep(this._settings.strategy.dca);
     }
     public canBuy(quantity:number, price:number):boolean {
-        return (quantity * price > this._settings.strategy.buy.minCost);
+        return (quantity * price >= this._settings.strategy.buy.minCost);
     }
     public shouldSell():boolean {
         return (this._settings.bag.quantity > 0 && this._settings.bag.cost > 0);
