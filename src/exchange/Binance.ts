@@ -72,7 +72,7 @@ export class Binance implements IExchange {
         return new Promise((resolve, reject) => {
             this._rest.newOrder(order, (err:any, data:any) => {
                 if (err) {
-                    log.debug(err, data);
+                    log.debug("action=placeSellLimit, asset=%s, quantity=%d, price=%d, error=%s", symbol, quantity, ask, data.msg);
                     reject(null);
                 } else {
                     resolve(data);
@@ -95,7 +95,7 @@ export class Binance implements IExchange {
         return new Promise((resolve, reject) => {
             this._rest.newOrder(order, (err:any, data:any) => {
                 if (err) {
-                    log.debug(err, data);
+                    log.debug("action=placeBuyLimit, asset=%s, quantity=%d, price=%d, error=%s", symbol, quantity, bid, data.msg);
                     reject(null);
                 } else {
                     resolve(data);
