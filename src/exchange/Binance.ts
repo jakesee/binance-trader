@@ -30,15 +30,15 @@ export class Binance implements IExchange {
     public start(): void {
         var symbols = this._config.symbols;
         var symbolInfo:{[key:string]:ISymbolInfo} = wait.for.promise(this._loadSymbolsInfo(symbols)); // cache the symbol info
-        var portfolio = wait.for.promise(this._getPortfolio(symbols));
+        var portfolio = wait.for.promise(this._getPortfolio(symbols, symbolInfo));
         _.each(symbols, (symbol:string) => {
             this._config[symbol].info = symbolInfo[symbol];
             this._assets[symbol] = new Asset(symbol, this._config[symbol]);
-            var quantity = Math.trunc(Number(portfolio[symbol].free));
-			var cost = Number(portfolio[symbol].weightedAveragePrice);
+            var quantity:number = Number(portfolio[symbol].freeQuantity);
+			var cost:number = Number(portfolio[symbol].weightedAveragePrice);
 			this._assets[symbol].setSettings(this._config[symbol], quantity, cost);
 			
-            log.info(this._assets[symbol].getSymbol(), this._assets[symbol].getSettings().bag.quantity, this._assets[symbol].getSettings().bag.cost, this._assets[symbol].getSettings().bag.position);
+            log.info("action=start, asset=%s, freeQty=%d, cost=%d, position=%s", this._assets[symbol].getSymbol(), this._assets[symbol].getSettings().bag.quantity, this._assets[symbol].getSettings().bag.cost, this._assets[symbol].getSettings().bag.position);
         });
 
         // setup real-time streams
@@ -142,7 +142,7 @@ export class Binance implements IExchange {
             });
         })
     }
-    private _getPortfolio(symbols:Array<string>) {
+    private _getPortfolio(symbols:Array<string>, symbolInfo:{[key:string]:ISymbolInfo}) {
 		return new Promise((resolve, reject) => {
 			this._rest.account((err:any, data:any) => {
 				var portfolio:{[key:string]:any} = {};
@@ -151,36 +151,35 @@ export class Binance implements IExchange {
 				} else {
                     var balances = _.filter(data.balances, (b:any) => { return symbols.indexOf(b.asset + this._config.quote) > -1 }); // TODO: should be allowed to use Array.includes()
 					_.each(balances, (b:any) => {
-						if(b.asset == this._config.quote) return true; // skip quote currency
-						b.weightedAveragePrice = 0;
-						b.totalTradeValue = 0;
-                        b.totalTradeQty = 0;
-                        portfolio[b.asset + this._config.quote] = b;
+                        if(b.asset == this._config.quote) return true; // skip quote currency
+                        var symbol = b.asset + this._config.quote;
 						var tradeBNB = [];
 						var tradeBTC = [];
-						var totalQuantity = Math.trunc(Number(b.free) + Number(b.locked)); // TODO: 
+						var freeQuantity = b.free - b.free % symbolInfo[symbol].minQty; // locked: Number(b.locked); 
 						tradeBTC = wait.for.promise(this._rest.myTrades(b.asset + this._config.quote));
 						if(b.asset != 'BNB') {
 							tradeBNB = wait.for.promise(this._rest.myTrades(b.asset+'BNB'));
 							if(!Array.isArray(tradeBNB)) tradeBNB = []; // some coins does not have BNB pairs
 						}
 						var trades = _.orderBy(tradeBTC.concat(tradeBNB), ['time'], ['desc']);
-						var totalTradeValue = 0;
-						var totalTradeQty = 0;
-						_.each(trades, (trade:any) => {
+						var nettHoldingCost = 0;
+                        var nettTradedQty = 0;
+                        _.each(trades, (trade:any) => { // loop through all recent trades (default 500 trades) to find out how much cost for the current amount of asset holding
+                            if(nettTradedQty >= freeQuantity) return false; // enough trades to cover the free quantity
 							var tradeQty = Number(trade.qty);
 							var tradePrice = Number(trade.price);
 							var modifier = (trade.isBuyer == true ? 1 : -1);
-							totalTradeQty += tradeQty * modifier;
-							// totalTradeQty += trade.commissionAsset == b.asset ? Number(trade.commission) : 0; // subtract the commission
-							totalTradeValue += tradeQty * tradePrice * modifier;
-							if(totalTradeQty >= totalQuantity) {
-								b.weightedAveragePrice = Math.max(0, totalTradeValue / Math.min(totalTradeQty, totalQuantity));
-								b.totalTradeValue = totalTradeValue;
-								b.totalTradeQty = Math.min(totalTradeQty, totalQuantity);
-								return false;
-							}
-						});
+							nettTradedQty += tradeQty * modifier;
+                            nettHoldingCost += tradeQty * tradePrice * modifier;
+                        });
+                        console.log("symbol", symbol, "nettHoldingCost", nettHoldingCost, "nettTradedQty", nettTradedQty, "lockedQty", b.locked, "freeQuantity", freeQuantity);
+                        nettHoldingCost = nettHoldingCost < 0 ? 0 : nettHoldingCost; // if less than 0 means sold more than bought, there was profit
+                        nettTradedQty = nettTradedQty < 0 ? 0 : nettTradedQty; // if less than 0 means asset bought from another source, then sold under this symbol, there was profit
+                        var weightQty = Math.min(nettTradedQty, freeQuantity);
+                        portfolio[symbol] = {
+                            'weightedAveragePrice': weightQty > 0 ? nettHoldingCost / weightQty : 0,
+                            'freeQuantity': freeQuantity
+                        }
 					});
 				}
 				this._events.emit('portfolio', portfolio);
