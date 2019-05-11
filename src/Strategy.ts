@@ -122,13 +122,8 @@ export class Strategy implements IStrategy {
 			var ask = book.asks[0].price;
 			if((ask / bid) - 1 < asset.getSettings().strategy.buy.maxBuySpread) { // prevent pump
 				var quantity = asset.getSettings().strategy.buy.minCost / bid;
-				log.debug("mincost", asset.getSettings().strategy.buy.minCost, "bid", bid, "quantity", quantity, "bag", bag.quantity);
-				if(bag.quantity > 0) quantity = 2 * bag.quantity; // if bag is not empty, it means we are doing DCA, so double the quantity to buy
-				quantity = (quantity < 1.0) ? (Math.ceil(quantity * 1000000) / 1000000) : Math.ceil(quantity); // round up the quantity
-				if(!asset.canTrade(quantity)) {
-					bag.position = POSITION.SELL; // can't buy, so just concentrate on selling
-					return;
-				}
+				quantity = bag.quantity > 0 ? 2 * bag.quantity : quantity; // if bag is not empty, it means we are doing DCA, so double the quantity to buy
+				quantity = asset.getAdjustedLotSize(quantity);
 				var order = wait.for.promise(exchange.placeBuyLimit(asset.getSymbol(), quantity, bid));
 				if(order != null) {
 					bag.order = {
@@ -174,10 +169,6 @@ export class Strategy implements IStrategy {
 
 		var cost = asset.getSettings().bag.cost;
 		var quantity = asset.getSettings().bag.quantity;
-
-		if(shouldSell && (quantity * cost < sellStrategy.minCost)) {
-			shouldSell = false;
-		}
 
 		if(shouldSell && sellStrategy.gain.enabled == true) {
 			var targetsell = cost * sellStrategy.gain.target;

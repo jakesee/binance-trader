@@ -35,7 +35,7 @@ export interface IAsset {
     isTimeToQuery(elapsedTime:number):boolean;
     isReady():boolean;
     resetDCA():void; // TODO: this should be initSellMode()
-    canTrade(quantity:number):boolean;
+    getAdjustedLotSize(quantity:number):number;
     shouldSell():boolean;
     clearOrder():void;
 }
