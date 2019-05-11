@@ -134,7 +134,6 @@ export class Strategy implements IStrategy {
 					}
 					bag.position = POSITION.BIDDING;
 				} else {
-					log.error('buy limit error', asset.getSymbol(), quantity, bid, price);
 					bag.position = POSITION.BUY;
 				}
 			}
@@ -207,7 +206,6 @@ export class Strategy implements IStrategy {
 				}
 				bag.position = POSITION.ASKING;
 			} else {
-				log.error('sell limit error', asset.getSymbol(), quantity, ask, price);
 				bag.position = POSITION.SELL;
 			}
 		} else if(price < bag.ask0) {

@@ -36,11 +36,11 @@ export class Bootstrap {
 
         // check for mandatory configuration
         if(!_.has(this._config, 'exchange') || EXCHANGES.indexOf(this._config.exchange) < 0) {
-            log.error("config.exchange is undefined or unrecognized.");
+            log.error("error=config.exchange is undefined or unrecognized.");
         } else if(!_.has(this._config, 'symbols')) {
-            log.error("config.symbols is missing.");
+            log.error("error=config.symbols is missing.");
         } else if(!_.has(this._config, 'default')) {
-            log.error("config.default is missing.");
+            log.error("error=config.default is missing.");
         } else {
             // load the secret keys from a separate file; this secret.json should not commit to source control
             var secretPath = "./config/secret.json";
