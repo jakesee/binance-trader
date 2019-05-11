@@ -1,11 +1,10 @@
 import { IExchange, IAsset, IOrder } from "./exchange/IExchange";
 import { Bootstrap } from "./Bootstrap";
+import { jStat } from "jstat";
 
 // utility
 import * as _ from 'lodash';
 import * as tick from 'animation-loops';
-import * as faststats from "fast-stats";
-var fstats = faststats.Stats;
 
 // networking
 import * as express from 'express';
@@ -59,17 +58,25 @@ class App {
             var asks = _.filter(book.asks, (ask:IOrder) => { return ask.price <= upperBound });
 
             // bid sentiment
-            var fsBids = new fstats().push(_.map(bids, (bid:IOrder) => { return +bid.quantity }));
-            var phighBids = fsBids.percentile(85);
-            var plowbids = fsBids.percentile(0);
+            var fsBids = _.map(bids, (bid:IOrder) => { return +bid.quantity });
+            var phighBids = jStat.percentile(fsBids, 0.85);
+            var plowbids = jStat.percentile(fsBids, 0);
             var sentimentBids = _.filter(bids, (bid:IOrder) => { return plowbids < bid.quantity  && bid.quantity < phighBids }) ;
 
             // ask sentiment
-            var fsAsks = new fstats().push(_.map(asks, (ask:IOrder) => { return +ask.quantity }));
-            var phighAsks = fsAsks.percentile(85);
-            var plowAsks = fsAsks.percentile(0);
+            var fsAsks = _.map(asks, (ask:IOrder) => { return +ask.quantity });
+            var phighAsks = jStat.percentile(fsAsks, 0.85);
+            var plowAsks = jStat.percentile(fsAsks, 0);
             var sentimentAsks = _.filter(asks, (ask:IOrder) => { return plowAsks < ask.quantity  && ask.quantity < phighAsks }) ;
 
+
+            // calculate stddev of ask and bids
+            var flatBids = Array();
+            _.each(bids, (bid:IOrder) => {
+                flatBids.push()
+            });
+            
+            jStat.stdev(_.map(bids, (bid:IOrder) => { return bid.price}))
 
             // var orders40 = [].concat(bids).concat(asks);
             // var price = 0;
@@ -93,19 +100,8 @@ class App {
             // var predict = weightedAvergage < symbol.trade.price ? 'fall' : 'rise';
             // console.log('wa', weightedAvergage, predict, price, count);
         
-            var supply = { quantity: 0, price: 0, volume: 0 };
-            var demand = { quantity: 0, price: 0, volume: 0 };
-            _.each(bids, (order:IOrder) => {
-                demand.quantity += Number(order.quantity);
-                demand.volume += Number(order.price) * Number(order.quantity);
-            })
-            demand.price = demand.volume / demand.quantity; // support
-            _.each(asks, (order:IOrder) => {
-                supply.quantity += Number(order.quantity);
-                supply.volume += Number(order.price) * Number(order.quantity);
-            });
-            supply.price = supply.volume / supply.quantity; //resistance
-        
+            var supply = this._getBookStats(asks, price);
+            var demand = this._getBookStats(bids, price);
         
             var high = this._getPrice(demand.quantity, book.asks);
             var low = this._getPrice(supply.quantity, book.bids);
@@ -124,7 +120,8 @@ class App {
                 // sbidsPrice: _.map(sentimentBids, (bid:IOrder) => { return bid.price }),
             });
 
-            if(data.symbol == "BTCUSDT") console.log("%s UB:%d H:%d R:%d P:%d S:%d L:%d LB:%d -- GS:%d GS:%d", data.symbol, upperBound.toFixed(2), high.toFixed(2), supply.price.toFixed(2), price, demand.price.toFixed(2), low.toFixed(2), lowerBound.toFixed(2), (high / price).toFixed(4), (supply.price / price).toFixed(4));
+            // if(data.symbol == "BTCUSDT") console.log("%s UB:%d H:%d R:%d P:%d S:%d L:%d LB:%d -- BSD:%d ASD:%d -- GH:%d GS:%d", data.symbol, upperBound.toFixed(2), high.toFixed(2), supply.price.toFixed(2), price, demand.price.toFixed(2), low.toFixed(2), lowerBound.toFixed(2), demand.stdDev.toFixed(2), supply.stdDev.toFixed(2), (high / price).toFixed(4), (supply.price / price).toFixed(4));
+            if(data.symbol == "BTCUSDT") console.log("%s P:%d BSD:%d ASD:%d, R:%d SD:%d, S:%d SD:%d", data.symbol, price, demand.stdDevSpotPrice.toFixed(2), supply.stdDevSpotPrice.toFixed(2), supply.meanPrice.toFixed(2), supply.stdDevMeanPrice.toFixed(2), demand.meanPrice.toFixed(2), demand.stdDevMeanPrice.toFixed(2));
         });
     }
 
@@ -140,6 +137,26 @@ class App {
         }
 
         return price;
+    }
+
+    private _getBookStats(orders:Array<IOrder>, spotPrice:number) {
+        var result = { quantity: 0, meanPrice: 0, volume: 0, stdDevMeanPrice: 0, stdDevSpotPrice: 0 };
+        _.each(orders, (order:IOrder) => {
+            result.quantity += Number(order.quantity);
+            result.volume += Number(order.price) * Number(order.quantity);
+        });
+        result.meanPrice = result.volume / result.quantity;
+
+        var meanPriceVariance = 0;
+        var spotPriceVariance = 0;
+        _.each(orders, (order:IOrder) => {
+            meanPriceVariance += Math.pow(order.price - result.meanPrice, 2) * order.quantity;
+            spotPriceVariance += Math.pow(order.price - spotPrice, 2) * order.quantity;
+        });
+        var factor = 1 / (orders.length - 1) / (result.quantity / orders.length);
+        result.stdDevMeanPrice = Math.sqrt(meanPriceVariance * factor);
+        result.stdDevSpotPrice = Math.sqrt(spotPriceVariance * factor);
+        return result;
     }
 }
 

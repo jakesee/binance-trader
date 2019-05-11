@@ -10,4 +10,4 @@ declare module "socket.io";
 
 // mathematics
 declare module "technicalindicators";
-declare module "fast-stats";
+declare module "jstat";

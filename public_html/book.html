@@ -68,8 +68,8 @@ app.controller('dashboard', ($scope) => {
 		// Plotly.newPlot('guide-action', plot, layout);
 
 		$scope.chart[data.symbol].price.push(data.price);
-		$scope.chart[data.symbol].resistance.push(data.supply.price);
-		$scope.chart[data.symbol].support.push(data.demand.price);
+		$scope.chart[data.symbol].resistance.push(data.supply.meanPrice);
+		$scope.chart[data.symbol].support.push(data.demand.meanPrice);
 		$scope.chart[data.symbol].high.push(data.high);
 		$scope.chart[data.symbol].low.push(data.low);
 		$scope.chart[data.symbol].mid.push((data.high + data.low) / 2);
