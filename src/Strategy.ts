@@ -28,7 +28,7 @@ export class Strategy implements IStrategy {
 			log.info("buy disabled", asset.getSymbol());
 			return;
 		}
-		log.debug('buy', asset.getSymbol(), '@', price);
+		log.debug('action=buy, asset=%s, price=%d', asset.getSymbol(), price);
 		var bag = asset.getSettings().bag;
         var tech = this._getTechnicalAnalysis(asset);
         
@@ -113,7 +113,7 @@ export class Strategy implements IStrategy {
 		bag.bid = Number(asset.getTradeLowest().price); // update lowest price
 		var stop = bag.bid + (bag.bid * asset.getSettings().strategy.buy.trail);
 		// trail the falling prices to enter at lowest possible price
-		log.debug('buying', asset.getSymbol(), "trigger:", bag.bid0, "best:", bag.bid, "price", price, "stop:", bag.bid + (bag.bid * asset.getSettings().strategy.buy.trail));
+		log.debug('action=buying, asset=%s, trigger=%d, best=%d, price=%d, stop=%d', asset.getSymbol(), bag.bid0, bag.bid, price, bag.bid + (bag.bid * asset.getSettings().strategy.buy.trail));
 		if(price >= stop && price <= bag.bid0) {
 			// make sure price is less than bag cost otherwise, the overall cost will increase!
 			// once OK, immediately place order
@@ -124,7 +124,7 @@ export class Strategy implements IStrategy {
 				var quantity = asset.getSettings().strategy.buy.minCost / bid;
 				if(bag.quantity > 0) quantity = 2 * bag.quantity; // if bag is not empty, it means we are doing DCA
 				quantity = (quantity < 1.0) ? (Math.ceil(quantity * 1000000) / 1000000) : Math.ceil(quantity); // round up the quantity
-				if(!asset.canBuy(quantity)) {
+				if(!asset.canTrade(quantity)) {
 					bag.position = POSITION.SELL; // can't buy, so just concentrate on selling
 					return;
 				}
@@ -136,7 +136,6 @@ export class Strategy implements IStrategy {
 						'price': Number(order.price),
 						'quantity': Number(order.origQty)
 					}
-					log.info('buy limit', asset.getSymbol(), quantity, bid, bag.order);
 					bag.position = POSITION.BIDDING;
 				} else {
 					log.error('buy limit error', asset.getSymbol(), quantity, bid, price);
@@ -154,7 +153,7 @@ export class Strategy implements IStrategy {
 			var book = asset.getOrderBook();
 			var bid0 = book.bids[0];
 			var ask0 = book.asks[0];
-			log.debug('bidding', asset.getSymbol(), order.price, bid0.price, bid0.quantity, ask0.quantity, bid0.quantity / ask0.quantity);	
+			log.debug('action=bidding, asset=%s, orderBid=%d, highBid=%d, qtyBid=%d, qtyAsk=%d, qtyMargin=%d', asset.getSymbol(), order.price, bid0.price, bid0.quantity, ask0.quantity, bid0.quantity / ask0.quantity);
 			if(order.price < bid0.price && (bid0.quantity / ask0.quantity) > 1.1) {
 				var cancel = wait.for.promise(exchange.cancelOrder(asset.getSymbol(), order.orderId));
 				if(cancel != null) {
@@ -182,7 +181,7 @@ export class Strategy implements IStrategy {
 		if(shouldSell && sellStrategy.gain.enabled == true) {
 			var targetsell = cost * sellStrategy.gain.target;
 			if(price <= targetsell) {
-				log.debug('sell', asset.getSymbol(), 'cost', cost, 'now', price, 'target', targetsell);
+				log.debug('action=sell, asset=%s, cost=%d, price=%d, target=%d', asset.getSymbol(), cost, price, targetsell);
 				shouldSell = false;
 			}
 		}
@@ -199,7 +198,7 @@ export class Strategy implements IStrategy {
     public selling(asset: IAsset, price: number, exchange:IExchange): void {
         var bag = asset.getSettings().bag;
 		bag.ask = Number(asset.getTradeHighest().price);
-		log.debug(asset.getSymbol(), 'selling', bag.ask, bag.ask - (bag.ask * asset.getSettings().strategy.sell.trail));
+		log.debug('action=selling, asset=%s, quantity=%d, ask=%d, stop=%d', asset.getSymbol(), bag.quantity, bag.ask, bag.ask - (bag.ask * asset.getSettings().strategy.sell.trail));
 		var stop = bag.ask - (bag.ask * asset.getSettings().strategy.sell.trail);
 		if(price < stop && price >= bag.ask0) {
 			// immediately place order
@@ -214,7 +213,6 @@ export class Strategy implements IStrategy {
 					'price': Number(order.price),
 					'quantity': Number(order.origQty)
 				}
-				log.info('sell limit', asset.getSymbol(), quantity, ask, bag.order);
 				bag.position = POSITION.ASKING;
 			} else {
 				log.error('sell limit error', asset.getSymbol(), quantity, ask, price);
@@ -231,7 +229,7 @@ export class Strategy implements IStrategy {
 			var book = asset.getOrderBook();
 			var bid0 = book.bids[0];
 			var ask0 = book.asks[0];
-			log.debug('asking', asset.getSymbol(), order.price, ask0.price, ask0.quantity, bid0.quantity, ask0.quantity / bid0.quantity);	
+			log.debug('action=asking, asset=%s, orderAsk=%d, lowAsk=%d, qtyAsk=%d, qtyBid=%d, qtyMargin=%d', asset.getSymbol(), order.price, ask0.price, ask0.quantity, bid0.quantity, ask0.quantity / bid0.quantity);
 			if(order.price > ask0.price && (ask0.quantity / bid0.quantity) > 1.1) {
 				var cancel = wait.for.promise(exchange.cancelOrder(asset.getSymbol(), order.orderId));
 				if(cancel != null) {

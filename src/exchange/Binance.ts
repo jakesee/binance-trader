@@ -68,6 +68,7 @@ export class Binance implements IExchange {
             'newOrderRespType': 'FULL',
             'timestamp': Date.now()
         };
+        log.debug("action=placeSellLimit, asset=%s, quantity=%d, price=%d", symbol, quantity, ask);
         return new Promise((resolve, reject) => {
             this._rest.newOrder(order, (err:any, data:any) => {
                 if (err) {
@@ -90,6 +91,7 @@ export class Binance implements IExchange {
             'newOrderRespType': 'FULL',
             'timestamp': Date.now()
         };
+        log.debug("action=placeBuyLimit, asset=%s, quantity=%d, price=%d", symbol, quantity, bid);
         return new Promise((resolve, reject) => {
             this._rest.newOrder(order, (err:any, data:any) => {
                 if (err) {

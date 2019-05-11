@@ -85,8 +85,9 @@ export class Asset implements IAsset
         // TODO: this function should be initSellMode, and should be called when trader sucessfully bought asset
         this._settings.bag.dca = _.cloneDeep(this._settings.strategy.dca);
     }
-    public canBuy(quantity:number):boolean {
-        return (quantity >= this._settings.info.minQty && (quantity % this._settings.info.minQty == 0));
+    public canTrade(quantity:number):boolean {
+        log.debug("action=canTrade, result=%s, quantity=%d, minQty=%d", quantity >= this._settings.info.minQty, quantity, this._settings.info.minQty);
+        return (quantity >= this._settings.info.minQty);
     }
     public shouldSell():boolean {
         return (this._settings.bag.quantity > 0 && this._settings.bag.cost > 0);
