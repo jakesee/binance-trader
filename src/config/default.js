@@ -33,7 +33,7 @@ module.exports = {
     "strategy": {
         "buy": {
           "enabled": true,
-          "minCost": 50,
+          "minCost": 100,
           "maxCost": 150,
           "maxBuySpread": 0.02,
           "trail": 0.0009,
@@ -125,7 +125,7 @@ module.exports = {
   "BTCUSDT": {
     "strategy": {
         "buy": {
-          "enabled": true,
+          "enabled": false,
           "minCost": 200,
           "maxCost": 200,
           "maxBuySpread": 0.02,
@@ -144,7 +144,7 @@ module.exports = {
           }
         },
         "sell": {
-          "enabled": true,
+          "enabled": false,
           "trail": 0.0007,
           "gain": {
               "enabled": true,
