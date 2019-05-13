@@ -50,6 +50,7 @@ app.controller('dashboard', ($scope) => {
 				price: [],
 				bidsQty: [],
 				bidsPrice: [],
+				emaDepth: []
 			};
 		}
 		$scope.$apply();
@@ -75,8 +76,10 @@ app.controller('dashboard', ($scope) => {
 		$scope.chart[data.symbol].mid.push((data.high + data.low) / 2);
 		$scope.chart[data.symbol].bidsQty = data.bidsQty;
 		$scope.chart[data.symbol].bidsPrice = data.bidsPrice;
+		$scope.chart[data.symbol].emaDepth.push(data.emaDepth);
 		// $scope.chart[data.symbol].sbidsQty = data.sbidsQty;
 		// $scope.chart[data.symbol].sbidsPrice = data.sbidsPrice;
+		if($scope.chart[data.symbol].emaDepth.length > 2000) $scope.chart[data.symbol].emaDepth.shift();
 		if($scope.chart[data.symbol].price.length > 2000) $scope.chart[data.symbol].price.shift();
 		if($scope.chart[data.symbol].resistance.length > 2000) $scope.chart[data.symbol].resistance.shift();
 		if($scope.chart[data.symbol].support.length > 2000) $scope.chart[data.symbol].support.shift();
@@ -91,6 +94,7 @@ app.controller('dashboard', ($scope) => {
 			{ type: 'scatter', y: $scope.chart[data.symbol].high, name: 'high' },
 			{ type: 'scatter', y: $scope.chart[data.symbol].low, name: 'low' },
 			{ type: 'scatter', y: $scope.chart[data.symbol].mid, name: 'mid' },
+			// { type: 'scatter', y: $scope.chart[data.symbol].emaDepth, name: 'ema depth' },
 		];
 		var layout = { title: data.symbol + ' support and resistance prices' }
 		Plotly.newPlot(data.symbol + '-plot', plot, layout);

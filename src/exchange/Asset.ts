@@ -133,24 +133,33 @@ export class Asset implements IAsset
         if(_.isEmpty(this._book)) { // buffer the stream so that depth snapshot can be updated properly
 			this._bookBuffer.push(book);
 			return;
-		}
+        }
+
+        // reset all the depths
+        _.forEach(this._book.bids, (value:any, key:string)=> { this._book.bids[key].deltaQty = 0; });
+        _.forEach(this._book.asks, (value:any, key:string)=> { this._book.asks[key].deltaQty = 0; });
+
 		// drop update if old
 		if(book.lastUpdateId <= this._book.lastUpdateId) return;
 		this._book.lastUpdateId = book.lastUpdateId
 		_.each(book.bidDepthDelta, (bid:any) => {
-			var quantity = Number(bid.quantity);
-			var price = bid.price; // typeof string
+			var quantity:number = Number(bid.quantity);
+			var price:string = bid.price; // typeof string
 			if(quantity > 0) {
-				this._book.bids[price] = { 'price': Number(price), 'quantity': quantity };
+                var deltaQty:number = 0;
+                if(!_.isEmpty(this._book.bids[price])) deltaQty = quantity - this._book.bids[price].quantity;
+				this._book.bids[price] = { 'price': Number(price), 'quantity': quantity, 'deltaQty': deltaQty };
 			} else {
 				delete this._book.bids[price];
 			}
 		});
 		_.each(book.askDepthDelta, (ask:any) => {
 			var quantity = Number(ask.quantity);
-			var price = ask.price; // typeof string
+			var price:string = ask.price; // typeof string
 			if(quantity > 0) {
-				this._book.asks[price] = { 'price': Number(price), 'quantity': quantity };
+                var deltaQty:number = 0;
+                if(!_.isEmpty(this._book.asks[price])) deltaQty = quantity - this._book.asks[price].quantity;
+				this._book.asks[price] = { 'price': Number(price), 'quantity': quantity, 'deltaQty': deltaQty };
 			} else {
 				delete this._book.asks[price];
 			}

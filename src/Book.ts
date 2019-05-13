@@ -1,6 +1,8 @@
-import { IExchange, IAsset, IOrder } from "./exchange/IExchange";
+import { IExchange, IAsset, IOrder, IOrderBook } from "./exchange/IExchange";
 import { Bootstrap } from "./Bootstrap";
 import { jStat } from "jstat";
+import * as technical from "technicalindicators";
+var EMA = technical.EMA;
 
 // utility
 import * as _ from 'lodash';
@@ -41,9 +43,29 @@ class App {
 	        socket.emit('symbol', _.map(this._exchange!.getAssets(), (a:IAsset) => {return a.getSymbol(); }));
         });
 
+        var votes:{[key:string]:Array<number>} = {};
         this._exchange.on('depth', (data) => {
+            var ema = [0];
             var symbol = this._exchange!.getAssets()[data.symbol];
             var book = symbol.getOrderBook();
+            var newVotes = _.filter(book.asks.concat(book.bids), (f:IOrder) => { return f.deltaQty > 0});
+            if(newVotes.length > 0) {
+                newVotes = _.map(newVotes, (m:IOrder) => { return m.price});
+                newVotes = _.sortBy(newVotes);
+                if(_.isEmpty(votes[data.symbol])) votes[data.symbol] = [];
+                votes[data.symbol] = votes[data.symbol].concat(newVotes); // stick new votes to the back
+                if(votes[data.symbol].length > 500) votes[data.symbol] = _.slice(votes[data.symbol], 0, 500);
+                var mean = jStat.mean(votes[data.symbol]);
+                var stdev = jStat.stdev(votes[data.symbol]);
+                var length = votes[data.symbol].length;
+                var emaInput = { 'values': votes[data.symbol], 'period': 24 };
+                ema = _.takeRight(EMA.calculate(emaInput), 1); 
+                if(data.symbol == "BTCUSDT") {
+                    console.log(newVotes);
+                    console.log("%s L:%d M:%d SD:%d EMA:%d", data.symbol, length, mean.toFixed(2), stdev.toFixed(2), ema);
+                }
+            }
+        
             if(!symbol.isReady()) return;
         
             // calculate the average 
@@ -68,15 +90,6 @@ class App {
             var phighAsks = jStat.percentile(fsAsks, 0.85);
             var plowAsks = jStat.percentile(fsAsks, 0);
             var sentimentAsks = _.filter(asks, (ask:IOrder) => { return plowAsks < ask.quantity  && ask.quantity < phighAsks }) ;
-
-
-            // calculate stddev of ask and bids
-            var flatBids = Array();
-            _.each(bids, (bid:IOrder) => {
-                flatBids.push()
-            });
-            
-            jStat.stdev(_.map(bids, (bid:IOrder) => { return bid.price}))
 
             // var orders40 = [].concat(bids).concat(asks);
             // var price = 0;
@@ -112,6 +125,7 @@ class App {
                 demand: demand,
                 supply: supply,
                 price: price,
+                emaDepth: ema[0],
                 low: low,
                 high: high,
                 bidsQty: _.map(sentimentBids, (bid:IOrder) => { return bid.quantity }).concat(_.map(sentimentAsks, (ask:IOrder) => { return -ask.quantity })),

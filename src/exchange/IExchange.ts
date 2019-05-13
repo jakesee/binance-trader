@@ -43,6 +43,7 @@ export interface IAsset {
 export interface IOrder {
     quantity:number;
     price:number;
+    deltaQty:number; // change in quantity since last update at this price
 }
 export interface IOrderBook {
     bids:IOrder[];
