@@ -50,7 +50,8 @@ app.controller('dashboard', ($scope) => {
 				price: [],
 				bidsQty: [],
 				bidsPrice: [],
-				emaDepth: []
+				emaBidLimits: [],
+				emaAskLimits: []
 			};
 		}
 		$scope.$apply();
@@ -58,15 +59,8 @@ app.controller('dashboard', ($scope) => {
 	});
 
 	socket.on('depth', (data) => {
-		// $scope.demand.push((data.demand.volume - data.supply.volume) / data.price);
-		// if($scope.demand.length > 2000) $scope.demand.shift();
-		// var plot = [
-		// 	{ type: 'scatter', y: $scope.demand, name: 'demand' },
-		// ];
-		// var layout = {
-		// 	title: 'Nett Demand Index @ current price',
-		// }
-		// Plotly.newPlot('guide-action', plot, layout);
+
+		console.log(data.emaBidLimit, data.emaAskLimit);
 
 		$scope.chart[data.symbol].price.push(data.price);
 		$scope.chart[data.symbol].resistance.push(data.supply.meanPrice);
@@ -76,10 +70,12 @@ app.controller('dashboard', ($scope) => {
 		$scope.chart[data.symbol].mid.push((data.high + data.low) / 2);
 		$scope.chart[data.symbol].bidsQty = data.bidsQty;
 		$scope.chart[data.symbol].bidsPrice = data.bidsPrice;
-		$scope.chart[data.symbol].emaDepth.push(data.emaDepth);
+		$scope.chart[data.symbol].emaBidLimits.push(data.emaBidLimit);
+		$scope.chart[data.symbol].emaAskLimits.push(data.emaAskLimit);
 		// $scope.chart[data.symbol].sbidsQty = data.sbidsQty;
 		// $scope.chart[data.symbol].sbidsPrice = data.sbidsPrice;
-		if($scope.chart[data.symbol].emaDepth.length > 2000) $scope.chart[data.symbol].emaDepth.shift();
+		if($scope.chart[data.symbol].emaBidLimits.length > 2000) $scope.chart[data.symbol].emaBidLimits.shift();
+		if($scope.chart[data.symbol].emaBidLimits.length > 2000) $scope.chart[data.symbol].emaAskLimits.shift();
 		if($scope.chart[data.symbol].price.length > 2000) $scope.chart[data.symbol].price.shift();
 		if($scope.chart[data.symbol].resistance.length > 2000) $scope.chart[data.symbol].resistance.shift();
 		if($scope.chart[data.symbol].support.length > 2000) $scope.chart[data.symbol].support.shift();
@@ -94,7 +90,8 @@ app.controller('dashboard', ($scope) => {
 			{ type: 'scatter', y: $scope.chart[data.symbol].high, name: 'high' },
 			{ type: 'scatter', y: $scope.chart[data.symbol].low, name: 'low' },
 			{ type: 'scatter', y: $scope.chart[data.symbol].mid, name: 'mid' },
-			// { type: 'scatter', y: $scope.chart[data.symbol].emaDepth, name: 'ema depth' },
+			{ type: 'scatter', y: $scope.chart[data.symbol].emaBidLimits, name: 'EMA Bids' },
+			{ type: 'scatter', y: $scope.chart[data.symbol].emaAskLimits, name: 'EMA Asks' },
 		];
 		var layout = { title: data.symbol + ' support and resistance prices' }
 		Plotly.newPlot(data.symbol + '-plot', plot, layout);
@@ -105,28 +102,7 @@ app.controller('dashboard', ($scope) => {
 		]
 		Plotly.newPlot(data.symbol + '-plot-bids', plot, layout);
 
-		// var layout = { title: data.symbol + ' ±10% bid sentiments (80th percentile)' }
-		// plot = [
-		// 	{ type: 'bar', y: $scope.chart[data.symbol].sbidsQty, x: $scope.chart[data.symbol].sbidsPrice }
-		// ]
-		// Plotly.newPlot(data.symbol + '-plot-bids-sentiment', plot, layout);
 	});
-
-	// $scope.delta = [];
-
-	// socket.on('trade', (data) => {
-	// 	console.log(data.maker, data.price, data.velocity);
-	// 	$scope.delta.push(data.velocity);
-	// 	if($scope.delta.length > 2000) $scope.delta.shift();
-	// 	var plot = [
-	// 		{ type: 'scatter', y: $scope.delta, name: 'delta' },
-	// 		//{ type: 'scatter', y: $scope.supply, name: 'supply' }
-	// 	];
-	// 	var layout = {
-	// 		title: 'Buy & Sell action',
-	// 	}
-	// 	Plotly.newPlot('delta-action', plot, layout);
-	// });
 });
 </script>
 </html>

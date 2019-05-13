@@ -43,27 +43,32 @@ class App {
 	        socket.emit('symbol', _.map(this._exchange!.getAssets(), (a:IAsset) => {return a.getSymbol(); }));
         });
 
-        var votes:{[key:string]:Array<number>} = {};
+        var bidVotes:{[key:string]:Array<number>} = {};
+        var askVotes:{[key:string]:Array<number>} = {};
+        var emaBids:{[key:string]:number} = {};
+        var emaAsks:{[key:string]:number} = {};
         this._exchange.on('depth', (data) => {
-            var ema = [0];
             var symbol = this._exchange!.getAssets()[data.symbol];
             var book = symbol.getOrderBook();
-            var newVotes = _.filter(book.asks.concat(book.bids), (f:IOrder) => { return f.deltaQty > 0});
-            if(newVotes.length > 0) {
-                newVotes = _.map(newVotes, (m:IOrder) => { return m.price});
-                newVotes = _.sortBy(newVotes);
-                if(_.isEmpty(votes[data.symbol])) votes[data.symbol] = [];
-                votes[data.symbol] = votes[data.symbol].concat(newVotes); // stick new votes to the back
-                if(votes[data.symbol].length > 500) votes[data.symbol] = _.slice(votes[data.symbol], 0, 500);
-                var mean = jStat.mean(votes[data.symbol]);
-                var stdev = jStat.stdev(votes[data.symbol]);
-                var length = votes[data.symbol].length;
-                var emaInput = { 'values': votes[data.symbol], 'period': 24 };
-                ema = _.takeRight(EMA.calculate(emaInput), 1); 
-                if(data.symbol == "BTCUSDT") {
-                    console.log(newVotes);
-                    console.log("%s L:%d M:%d SD:%d EMA:%d", data.symbol, length, mean.toFixed(2), stdev.toFixed(2), ema);
-                }
+            if(_.isEmpty(bidVotes[data.symbol])) bidVotes[data.symbol] = [];
+            var newBidLimits = _.filter(book.bids, (f:IOrder) => { return f.deltaQty > 0});
+            if(newBidLimits.length > 0) {
+                bidVotes[data.symbol].push(this._calcNewVote(newBidLimits));
+                if(bidVotes[data.symbol].length > 500) bidVotes[data.symbol].shift();
+                emaBids[data.symbol] = this._getEMA(bidVotes[data.symbol]);
+            } 
+
+            if(_.isEmpty(askVotes[data.symbol])) askVotes[data.symbol] = [];
+            var newAsksLimits = _.filter(book.asks, (f:IOrder) => { return f.deltaQty > 0})
+            if(newAsksLimits.length > 0) {
+                askVotes[data.symbol].push(this._calcNewVote(newAsksLimits));
+                if(askVotes[data.symbol].length > 500) askVotes[data.symbol].shift();
+                emaAsks[data.symbol] = this._getEMA(askVotes[data.symbol]);
+            }
+
+            if(data.symbol == 'LTCUSDT') {
+                console.log('bids', bidVotes[data.symbol].length, emaBids[data.symbol]);
+                console.log('asks', askVotes[data.symbol].length, emaAsks[data.symbol]);
             }
         
             if(!symbol.isReady()) return;
@@ -125,7 +130,8 @@ class App {
                 demand: demand,
                 supply: supply,
                 price: price,
-                emaDepth: ema[0],
+                emaBidLimit: emaBids[data.symbol],
+                emaAskLimit: emaAsks[data.symbol],
                 low: low,
                 high: high,
                 bidsQty: _.map(sentimentBids, (bid:IOrder) => { return bid.quantity }).concat(_.map(sentimentAsks, (ask:IOrder) => { return -ask.quantity })),
@@ -134,9 +140,25 @@ class App {
                 // sbidsPrice: _.map(sentimentBids, (bid:IOrder) => { return bid.price }),
             });
 
-            // if(data.symbol == "BTCUSDT") console.log("%s UB:%d H:%d R:%d P:%d S:%d L:%d LB:%d -- BSD:%d ASD:%d -- GH:%d GS:%d", data.symbol, upperBound.toFixed(2), high.toFixed(2), supply.price.toFixed(2), price, demand.price.toFixed(2), low.toFixed(2), lowerBound.toFixed(2), demand.stdDev.toFixed(2), supply.stdDev.toFixed(2), (high / price).toFixed(4), (supply.price / price).toFixed(4));
-            if(data.symbol == "BTCUSDT") console.log("%s P:%d BSD:%d ASD:%d, R:%d SD:%d, S:%d SD:%d", data.symbol, price, demand.stdDevSpotPrice.toFixed(2), supply.stdDevSpotPrice.toFixed(2), supply.meanPrice.toFixed(2), supply.stdDevMeanPrice.toFixed(2), demand.meanPrice.toFixed(2), demand.stdDevMeanPrice.toFixed(2));
+            // if(data.symbol == "LTCUSDT") console.log("%s UB:%d H:%d R:%d P:%d S:%d L:%d LB:%d -- BSD:%d ASD:%d -- GH:%d GS:%d", data.symbol, upperBound.toFixed(2), high.toFixed(2), supply.price.toFixed(2), price, demand.price.toFixed(2), low.toFixed(2), lowerBound.toFixed(2), demand.stdDev.toFixed(2), supply.stdDev.toFixed(2), (high / price).toFixed(4), (supply.price / price).toFixed(4));
+            if(data.symbol == "LTCUSDT") console.log("%s P:%d BSD:%d ASD:%d, R:%d SD:%d, S:%d SD:%d, ema_gain:%d", data.symbol, price, demand.stdDevSpotPrice.toFixed(2), supply.stdDevSpotPrice.toFixed(2), supply.meanPrice.toFixed(2), supply.stdDevMeanPrice.toFixed(2), demand.meanPrice.toFixed(2), demand.stdDevMeanPrice.toFixed(2), (emaBids[data.symbol] / price).toFixed(3), (emaAsks[data.symbol] / price).toFixed(3));
         });
+    }
+
+    private _calcNewVote(limits:Array<IOrder>):number {
+        var _limits = limits;
+        if(_limits.length == 0) return NaN;
+        _limits = _.map(_limits, (m:IOrder) => { return m.price});
+        return _.sum(_limits) / _limits.length;;
+    }
+
+    private _getEMA(votes:number[]):number {
+        var mean = jStat.mean(votes);
+        var stdev = jStat.stdev(votes);
+        var length = votes.length;
+        var emaInput = { 'values': votes, 'period': 9 };
+        var ema = _.takeRight(EMA.calculate(emaInput), 1)[0]; 
+        return ema;
     }
 
     private _getPrice(quantity:number, offers:IOrder[]):number {

@@ -144,7 +144,7 @@ module.exports = {
           }
         },
         "sell": {
-          "enabled": false,
+          "enabled": true,
           "trail": 0.0007,
           "gain": {
               "enabled": true,
