@@ -33,8 +33,8 @@ module.exports = {
     "strategy": {
         "buy": {
           "enabled": true,
-          "minCost": 100,
-          "maxCost": 150,
+          "minCost": 200,
+          "maxCost": 250,
           "maxBuySpread": 0.02,
           "trail": 0.0009,
           "bb": {
@@ -82,7 +82,7 @@ module.exports = {
         },
         "dca": {
           "enabled": true,
-          "levels": [-0.045, -0.045, -0.045, -0.055, -0.055]
+          "levels": [-0.345, -0.045, -0.045, -0.055, -0.055]
         }
    
       }
@@ -91,8 +91,8 @@ module.exports = {
     "strategy": {
         "buy": {
           "enabled": true,
-          "minCost": 50,
-          "maxCost": 150,
+          "minCost": 200,
+          "maxCost": 250,
           "maxBuySpread": 0.02,
           "trail": 0.0007,
           "rsi": {
@@ -118,14 +118,14 @@ module.exports = {
         },
         "dca": {
           "enabled": true,
-          "levels": [-0.045, -0.045, -0.045, -0.055, -0.055]
+          "levels": [-0.345, -0.045, -0.045, -0.055, -0.055]
         }
     }
   },
   "BTCUSDT": {
     "strategy": {
         "buy": {
-          "enabled": false,
+          "enabled": true,
           "minCost": 200,
           "maxCost": 200,
           "maxBuySpread": 0.02,
@@ -152,8 +152,8 @@ module.exports = {
           }
         },
         "dca": {
-          "enabled": false,
-          "levels": [-0.045, -0.045, -0.045, -0.055, -0.055]
+          "enabled": true,
+          "levels": [-0.345, -0.045, -0.045, -0.055, -0.055]
         }
     }
   }
