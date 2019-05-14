@@ -125,7 +125,7 @@ module.exports = {
   "BTCUSDT": {
     "strategy": {
         "buy": {
-          "enabled": false,
+          "enabled": true,
           "minCost": 200,
           "maxCost": 200,
           "maxBuySpread": 0.02,
