@@ -9,6 +9,7 @@
     "express": "^4.16.3",
     "fast-stats": "0.0.3",
     "jstat": "^1.7.1",
+    "@types/lodash": "^4.14.129",
     "lodash": "^4.17.11",
     "loglevel": "^1.6.1",
     "socket.io": "^2.0.4",
@@ -16,13 +17,16 @@
     "wait-for-stuff": "^1.4.0"
   },
   "devDependencies": {
+    "@types/jasmine": "^3.3.12",
     "@types/node": "^9.6.0",
     "cpx": "^1.5.0",
-    "typescript": "^2.7.2"
+    "jasmine": "^3.4.0",
+    "ts-node": "^8.1.0",
+    "typescript": "^2.9.2"
   },
   "scripts": {
     "start": "cd build && node app.js",
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "test": "ts-node node_modules/jasmine/bin/jasmine",
     "build": "tsc && cpx \"src/config/*.*\" build/config --verbose",
     "postinstall": "npm run-script build"
   },
