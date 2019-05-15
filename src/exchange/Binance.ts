@@ -6,7 +6,6 @@ import * as EventEmitter from "events";
 import { IExchange, IAsset, ISymbolInfo } from "./IExchange";
 import { Asset } from "./Asset";
 import * as binance from 'binance';
-import { exists } from 'fs';
 
 export class Binance implements IExchange {
 
@@ -14,7 +13,6 @@ export class Binance implements IExchange {
     private _assets:{[key:string]:Asset} = {}; // store the current state of the symbols
     private _rest:any;
     private _binanceWS:any;
-    private _symbolInfo:{[key:string]:ISymbolInfo} = {};
 
     constructor(private _config:{[key:string]:any}) {
         this._rest = new binance.BinanceRest({
@@ -253,7 +251,7 @@ export class Binance implements IExchange {
             var symbol = streamEvent.data.symbol;
             if (symbol in this._assets && this._assets[symbol].isReady()) {
                 var thisKline = this._translateKline(streamEvent.data.kline);
-                var lastKline = _.last(this._assets[symbol].klines);
+                var lastKline:any = _.last(this._assets[symbol].klines);
                 if (lastKline.openTime == thisKline.openTime) { // update kline
                     this._assets[symbol].klines[this._assets[symbol].klines.length - 1] = thisKline;
                 } else { // add new kline and remove the oldest (first in the array) one

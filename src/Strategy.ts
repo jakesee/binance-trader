@@ -72,7 +72,7 @@ export class Strategy implements IStrategy {
 			}
 		}
 		if(shouldBuy && buyStrategy.emaspread.enabled === true) {
-			var level = (tech.emafast / tech.emaslow) - 1;
+			var level = (tech.emafast[0] / tech.emaslow[0]) - 1;
 			log.debug("emaspread", level, "fast:", tech.emafast, "slow:", tech.emaslow);
 			// to buy, if trigger is negative, then price must be lower than trigger
 			// to buy, if trigger is positive, then price must be higher than trigger
@@ -82,7 +82,7 @@ export class Strategy implements IStrategy {
 			}
 		}
 		if(shouldBuy && buyStrategy.emafast.enabled === true) {
-			var level = (price / tech.emafast) - 1;
+			var level = (price / tech.emafast[0]) - 1;
 			log.debug("emafast", level);
 			if((buyStrategy.emafast.trigger < 0 && level > buyStrategy.emafast.trigger)
 				|| (buyStrategy.emafast.trigger > 0 && level < buyStrategy.emafast.trigger)) {
@@ -90,7 +90,7 @@ export class Strategy implements IStrategy {
 			}
 		}
 		if(shouldBuy && buyStrategy.emaslow.enabled === true) {
-			var level = (price / tech.emaslow) -1;
+			var level = (price / tech.emaslow[0]) -1;
 			log.debug("emaslow", level);
 			if((buyStrategy.emaslow.trigger < 0 && level > buyStrategy.emaslow.trigger)
 				|| (buyStrategy.emaslow.trigger > 0 && level < buyStrategy.emaslow.trigger)) {
@@ -231,8 +231,8 @@ export class Strategy implements IStrategy {
     }
 
     private _getTechnicalAnalysis(asset:IAsset) {
-		var macd = null; var bb = null; var rsi = null;
-		var emafast = null; var emaslow = null;
+		var macd:{[key:string]:any}[] = []; var bb:{[key:string]:any}[] = []; var rsi:number[] = [];
+		var emafast:number[] = []; var emaslow:number[] = [];
 		var indicator = asset.getSettings().indicator;
 		var strategy = asset.getSettings().strategy;
 		var closes = _.map(asset.getKlines(), (kline:IKline) => { return Number(kline.close); });
@@ -261,22 +261,22 @@ export class Strategy implements IStrategy {
 				'values': closes,
 				'period': indicator.rsi.period
 			}
-			rsi = _.takeRight(RSI.calculate(rsiInput), 1);
+			rsi = <number[]>_.takeRight(RSI.calculate(rsiInput), 1);
 		}
 		if(strategy.buy.emaspread.enabled === true) {
 			var emafastInput = { 'values': closes, 'period': indicator.ema.fastPeriod };
-			emafast = _.takeRight(EMA.calculate(emafastInput), 1);
+			emafast = <number[]>_.takeRight(EMA.calculate(emafastInput), 1);
 
 			var emaslowInput = { 'values': closes, 'period': indicator.ema.slowPeriod };
-			emaslow = _.takeRight(EMA.calculate(emaslowInput), 1);
+			emaslow = <number[]>_.takeRight(EMA.calculate(emaslowInput), 1);
 		}
 		if(strategy.buy.emafast.enabled == true && emafast == null)  {
 			var emafastInput = { 'values': closes, 'period': indicator.ema.fastPeriod };
-			emafast = _.takeRight(EMA.calculate(emafastInput), 1);
+			emafast = <number[]>_.takeRight(EMA.calculate(emafastInput), 1);
 		}
 		if(strategy.buy.emaslow.enabled == true && emaslow == null)  {
 			var emaslowInput = { 'values': closes, 'period': indicator.ema.slowPeriod };
-			emaslow = _.takeRight(EMA.calculate(emaslowInput), 1);
+			emaslow = <number[]>_.takeRight(EMA.calculate(emaslowInput), 1);
 		}
 		
 		return {

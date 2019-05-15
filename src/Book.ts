@@ -148,17 +148,14 @@ class App {
     private _calcNewVote(limits:Array<IOrder>):number {
         var _limits = limits;
         if(_limits.length == 0) return NaN;
-        _limits = _.map(_limits, (m:IOrder) => { return m.price});
-        return _.sum(_limits) / _limits.length;;
+        var prices:number[] = _.map(_limits, (m:IOrder) => { return m.price});
+        return _.sum(prices) / _limits.length;;
     }
 
     private _getEMA(votes:number[]):number {
-        var mean = jStat.mean(votes);
-        var stdev = jStat.stdev(votes);
-        var length = votes.length;
         var emaInput = { 'values': votes, 'period': 9 };
-        var ema = _.takeRight(EMA.calculate(emaInput), 1)[0]; 
-        return ema;
+        var ema = <number[]>_.takeRight(EMA.calculate(emaInput), 1); 
+        return ema[0];
     }
 
     private _getPrice(quantity:number, offers:IOrder[]):number {
