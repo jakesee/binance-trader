@@ -8,7 +8,7 @@ module.exports = {
         "quantity": null,
         "cost": null
     },
-    "frequency": 5000,
+    "frequency": 3000,
     "indicator": {
         "kline": {
           "interval": "1m"
