@@ -34,7 +34,7 @@ module.exports = {
         "buy": {
           "enabled": true,
           "minCost": 300,
-          "maxCost": 250,
+          "maxCost": 350,
           "maxBuySpread": 0.02,
           "trail": 0.0009,
           "bb": {
@@ -92,7 +92,7 @@ module.exports = {
         "buy": {
           "enabled": true,
           "minCost": 300,
-          "maxCost": 250,
+          "maxCost": 350,
           "maxBuySpread": 0.02,
           "trail": 0.0007,
           "rsi": {

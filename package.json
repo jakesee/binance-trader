@@ -17,16 +17,16 @@
     "wait-for-stuff": "^1.4.0"
   },
   "devDependencies": {
-    "@types/jasmine": "^3.3.12",
+    "@types/jest": "^24.0.13",
     "@types/node": "^9.6.0",
     "cpx": "^1.5.0",
-    "jasmine": "^3.4.0",
-    "ts-node": "^8.1.0",
-    "typescript": "^2.9.2"
+    "jest": "^24.8.0",
+    "ts-jest": "^24.0.2",
+    "typescript": "^3.4.5"
   },
   "scripts": {
     "start": "cd build && node app.js",
-    "test": "ts-node node_modules/jasmine/bin/jasmine",
+    "test": "jest",
     "build": "tsc && cpx \"src/config/*.*\" build/config --verbose",
     "postinstall": "npm run-script build"
   },
