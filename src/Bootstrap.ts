@@ -2,6 +2,7 @@ import * as _ from "lodash";
 import * as log from "loglevel";
 import * as fs from "fs";
 import {IExchange, ISettings, IBag} from "./exchange/IExchange";
+import * as path from "path";
 
 // load all the exchanges
 import {Binance} from "./exchange/Binance";
@@ -11,7 +12,7 @@ var EXCHANGES = ['binance']; //
 
 export class Bootstrap {
 
-    private _config:{[key:string]:any} = require('./config/default.js');
+    private _config:{[key:string]:any} = require(path.join(__dirname, './config/default'));
     private _exchange:IExchange|null = null;
 
     constructor() {
@@ -43,7 +44,7 @@ export class Bootstrap {
             log.error("error=config.default is missing.");
         } else {
             // load the secret keys from a separate file; this secret.json should not commit to source control
-            var secretPath = "./config/secret.json";
+            var secretPath = path.join(__dirname, "./config/secret.json");
             var secret = this._loadFile(secretPath);
             this._config[this._config.exchange] = {
                 'key': process.env.key || secret[this._config.exchange].key,

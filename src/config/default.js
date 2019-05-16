@@ -8,10 +8,10 @@ module.exports = {
         "quantity": null,
         "cost": null
     },
-    "frequency": 5000,
+    "frequency": 3000,
     "indicator": {
         "kline": {
-          "interval": "3m"
+          "interval": "1m"
         },
         "bb": {
           "period": 20,
@@ -33,8 +33,8 @@ module.exports = {
     "strategy": {
         "buy": {
           "enabled": true,
-          "minCost": 200,
-          "maxCost": 250,
+          "minCost": 300,
+          "maxCost": 350,
           "maxBuySpread": 0.02,
           "trail": 0.0009,
           "bb": {
@@ -91,8 +91,8 @@ module.exports = {
     "strategy": {
         "buy": {
           "enabled": true,
-          "minCost": 200,
-          "maxCost": 250,
+          "minCost": 300,
+          "maxCost": 350,
           "maxBuySpread": 0.02,
           "trail": 0.0007,
           "rsi": {
@@ -126,7 +126,7 @@ module.exports = {
     "strategy": {
         "buy": {
           "enabled": true,
-          "minCost": 200,
+          "minCost": 300,
           "maxCost": 200,
           "maxBuySpread": 0.02,
           "trail": 0.0007,
@@ -135,11 +135,11 @@ module.exports = {
               "trigger": 34
           },
           "emaspread": {
-            "enabled": false,
+            "enabled": true,
             "trigger": -0.003
           },
           "emaslow": {
-              "enabled": false,
+              "enabled": true,
               "trigger": -0.010
           }
         },
