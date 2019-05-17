@@ -5,10 +5,10 @@ module.exports = {
   "symbols": ["BTCUSDT", "VETUSDT", "LTCUSDT"],
   "default": {
     "bag": {
-        "quantity": null,
-        "cost": null
+        "quantity": NaN,
+        "cost": NaN
     },
-    "frequency": 3000,
+    "frequency": 5000,
     "indicator": {
         "kline": {
           "interval": "1m"
@@ -81,7 +81,7 @@ module.exports = {
           }
         },
         "dca": {
-          "enabled": true,
+          "enabled": false,
           "levels": [-0.345, -0.045, -0.045, -0.055, -0.055]
         }
    
@@ -117,7 +117,7 @@ module.exports = {
           }
         },
         "dca": {
-          "enabled": true,
+          "enabled": false,
           "levels": [-0.345, -0.045, -0.045, -0.055, -0.055]
         }
     }
@@ -152,7 +152,7 @@ module.exports = {
           }
         },
         "dca": {
-          "enabled": true,
+          "enabled": false,
           "levels": [-0.345, -0.045, -0.045, -0.055, -0.055]
         }
     }
