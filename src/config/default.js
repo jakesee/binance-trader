@@ -32,7 +32,7 @@ module.exports = {
     },
     "strategy": {
         "buy": {
-          "enabled": true,
+          "enabled": false,
           "minCost": 300,
           "maxCost": 350,
           "maxBuySpread": 0.02,
@@ -90,7 +90,7 @@ module.exports = {
   "LTCUSDT": {
     "strategy": {
         "buy": {
-          "enabled": true,
+          "enabled": false,
           "minCost": 300,
           "maxCost": 350,
           "maxBuySpread": 0.02,
@@ -125,7 +125,7 @@ module.exports = {
   "BTCUSDT": {
     "strategy": {
         "buy": {
-          "enabled": true,
+          "enabled": false,
           "minCost": 300,
           "maxCost": 200,
           "maxBuySpread": 0.02,
