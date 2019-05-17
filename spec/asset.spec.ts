@@ -3,7 +3,7 @@ import { Asset } from "../build/exchange/Asset";
 
 describe('Binance Asset', ()=> {
 
-    var asset;
+    var asset:any;
 
     beforeEach(() => {
         asset = new Asset('BTCUSD', {

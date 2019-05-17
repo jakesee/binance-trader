@@ -56,9 +56,10 @@
   },
   "include": [
     "src/**/*.ts",
+    "index.d.ts"
   ],
   "exclude": [
       "node_modules",
-      "spec"
+      "**/*.spec.ts"
   ]
 }
