@@ -32,13 +32,8 @@ module.exports = {
     },
     "strategy": {
         "buy": {
-<<<<<<< HEAD
           "enabled": true,
           "minCost": 200,
-=======
-          "enabled": false,
-          "minCost": 300,
->>>>>>> 101eeaf7ff5658078ba43be29992c567f983a348
           "maxCost": 350,
           "maxBuySpread": 0.02,
           "trail": 0.0009,
@@ -87,11 +82,7 @@ module.exports = {
         },
         "dca": {
           "enabled": false,
-<<<<<<< HEAD
-          "levels": [-0.045, -0.045, -0.045, -0.055, -0.055]
-=======
           "levels": [-0.345, -0.045, -0.045, -0.055, -0.055]
->>>>>>> 101eeaf7ff5658078ba43be29992c567f983a348
         }
    
       }
@@ -99,13 +90,8 @@ module.exports = {
   "LTCUSDT": {
     "strategy": {
         "buy": {
-<<<<<<< HEAD
           "enabled": true,
           "minCost": 200,
-=======
-          "enabled": false,
-          "minCost": 300,
->>>>>>> 101eeaf7ff5658078ba43be29992c567f983a348
           "maxCost": 350,
           "maxBuySpread": 0.02,
           "trail": 0.0007,
@@ -132,24 +118,15 @@ module.exports = {
         },
         "dca": {
           "enabled": false,
-<<<<<<< HEAD
-          "levels": [-0.045, -0.045, -0.045, -0.055, -0.055]
-=======
           "levels": [-0.345, -0.045, -0.045, -0.055, -0.055]
->>>>>>> 101eeaf7ff5658078ba43be29992c567f983a348
         }
     }
   },
   "BTCUSDT": {
     "strategy": {
         "buy": {
-<<<<<<< HEAD
           "enabled": true,
           "minCost": 200,
-=======
-          "enabled": false,
-          "minCost": 300,
->>>>>>> 101eeaf7ff5658078ba43be29992c567f983a348
           "maxCost": 200,
           "maxBuySpread": 0.02,
           "trail": 0.0007,
@@ -176,11 +153,7 @@ module.exports = {
         },
         "dca": {
           "enabled": false,
-<<<<<<< HEAD
-          "levels": [-0.045, -0.045, -0.045, -0.055, -0.055]
-=======
           "levels": [-0.345, -0.045, -0.045, -0.055, -0.055]
->>>>>>> 101eeaf7ff5658078ba43be29992c567f983a348
         }
     }
   }
