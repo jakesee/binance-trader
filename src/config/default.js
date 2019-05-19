@@ -5,10 +5,10 @@ module.exports = {
   "symbols": ["BTCUSDT", "VETUSDT", "LTCUSDT"],
   "default": {
     "bag": {
-        "quantity": null,
-        "cost": null
+        "quantity": NaN,
+        "cost": NaN
     },
-    "frequency": 3000,
+    "frequency": 5000,
     "indicator": {
         "kline": {
           "interval": "1m"
@@ -33,7 +33,7 @@ module.exports = {
     "strategy": {
         "buy": {
           "enabled": true,
-          "minCost": 300,
+          "minCost": 200,
           "maxCost": 350,
           "maxBuySpread": 0.02,
           "trail": 0.0009,
@@ -81,7 +81,7 @@ module.exports = {
           }
         },
         "dca": {
-          "enabled": true,
+          "enabled": false,
           "levels": [-0.045, -0.045, -0.045, -0.055, -0.055]
         }
    
@@ -91,7 +91,7 @@ module.exports = {
     "strategy": {
         "buy": {
           "enabled": true,
-          "minCost": 300,
+          "minCost": 200,
           "maxCost": 350,
           "maxBuySpread": 0.02,
           "trail": 0.0007,
@@ -117,7 +117,7 @@ module.exports = {
           }
         },
         "dca": {
-          "enabled": true,
+          "enabled": false,
           "levels": [-0.045, -0.045, -0.045, -0.055, -0.055]
         }
     }
@@ -126,7 +126,7 @@ module.exports = {
     "strategy": {
         "buy": {
           "enabled": true,
-          "minCost": 300,
+          "minCost": 200,
           "maxCost": 200,
           "maxBuySpread": 0.02,
           "trail": 0.0007,
@@ -152,7 +152,7 @@ module.exports = {
           }
         },
         "dca": {
-          "enabled": true,
+          "enabled": false,
           "levels": [-0.045, -0.045, -0.045, -0.055, -0.055]
         }
     }
