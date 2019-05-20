@@ -2,7 +2,6 @@ import * as log from 'loglevel';
 import * as _ from 'lodash';
 import * as wait from 'wait-for-stuff';
 import * as EventEmitter from "events";
-
 import { IExchange, IAsset, ISymbolInfo } from "./IExchange";
 import { Asset } from "./Asset";
 import * as binance from 'binance';
@@ -56,6 +55,7 @@ export class Binance implements IExchange {
         this._events.on(event, callable);
     }
     public placeSellLimit(symbol:string, quantity:number, ask:number) {
+        quantity = this._adjustLotSize(symbol, quantity);
         var order = {
             'symbol': symbol,
             'side': 'SELL',
@@ -79,6 +79,7 @@ export class Binance implements IExchange {
         });
     }
     public placeBuyLimit(symbol:string, quantity:number, bid:number) {
+        quantity = this._adjustLotSize(symbol, quantity);
         var order = {
             'symbol': symbol,
             'side': 'BUY',
@@ -309,5 +310,14 @@ export class Binance implements IExchange {
                 }
             }
         });
+    }
+    private _adjustLotSize(symbol:string, quantity:number):number {
+        var asset = this.getAssets()[symbol];
+        var minQty = asset.getSettings().info.minQty;
+        var adjusted = quantity;
+        adjusted = adjusted - (adjusted % minQty);
+        adjusted = adjusted > minQty ? adjusted : minQty; // must have at least minQty, or else expect to fail
+        log.debug("action=getAdjustedLotSize, originalQty=%d, adjustedQty=%d", quantity, adjusted);
+        return adjusted;
     }
 }

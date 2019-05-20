@@ -1,6 +1,5 @@
 import * as binance from 'binance';
 import { Binance } from '../build/exchange/Binance';
-import { getConsoleOutput } from '@jest/console';
 jest.mock('binance');
 
 describe('Binance', () => {

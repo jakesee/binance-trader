@@ -123,7 +123,6 @@ export class Strategy implements IStrategy {
 			if((ask / bid) - 1 < asset.getSettings().strategy.buy.maxBuySpread) { // prevent pump
 				var quantity = asset.getSettings().strategy.buy.minCost / bid;
 				quantity = bag.quantity > 0 ? 2 * bag.quantity : quantity; // if bag is not empty, it means we are doing DCA, so double the quantity to buy
-				quantity = asset.getAdjustedLotSize(quantity);
 				var order = wait.for.promise(exchange.placeBuyLimit(asset.getSymbol(), quantity, bid));
 				if(order != null) {
 					bag.order = {
