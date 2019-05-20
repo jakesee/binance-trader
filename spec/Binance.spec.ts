@@ -1,6 +1,8 @@
-import * as binance from 'binance';
+import { BinanceRest, BinanceWS } from 'binance';
 import { Binance } from '../build/exchange/Binance';
-jest.mock('binance');
+jest.genMockFromModule('binance');
+BinanceRest.mockImplementation(() => { data: 'happy' })
+BinanceWS.mockImplementation(() => { data: 'sad' })
 
 describe('Binance', () => {
     var config = {
@@ -17,14 +19,15 @@ describe('Binance', () => {
 
    it('must connect to binance api when constructed', () => {
         var exchange = new Binance(config);
-        expect(binance.BinanceRest).toHaveBeenCalledTimes(1);
-        expect(binance.BinanceWS).toHaveBeenCalledTimes(1);
+        expect(BinanceRest).toHaveBeenCalledTimes(1);
+        expect(BinanceRest).toReturnWith("apple");
+        expect(BinanceWS).toHaveBeenCalledTimes(1);
    });
 
    xit('must automatically calculate bag cost and quantity from trade history when not specified in config', () => {
         var exchange = new Binance(config);
         exchange.start();
-        expect(binance.BinanceWS).toHaveBeenCalledTimes(1);
+        expect(BinanceWS).toHaveBeenCalledTimes(1);
    });
 
    it('must place sell limit', () => {
